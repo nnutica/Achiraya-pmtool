@@ -5,13 +5,16 @@ import { fetchTasks, updateTask, deleteTask } from "@/libs/taskservice";
 import TaskCard from "../Components/TaskCard";
 import AddTaskSidebar from "../Components/Addtasksidebar";
 import TaskDetailSidebar from "../Components/TaskDetailSidebar";
+import DeleteModal from "../Components/DeleteModal";
 
 export default function Dashboard() {
     // State ต่างๆ
     const [tasks, setTasks] = useState<Task[]>([]);
     const [showAddSidebar, setShowAddSidebar] = useState(false);
     const [showDetailSidebar, setShowDetailSidebar] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+    const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
 
     const loadTasks = async () => {
         const data = await fetchTasks();
@@ -25,41 +28,10 @@ export default function Dashboard() {
     const handleTaskClick = async (task: Task) => {
         // ตรวจสอบสถานะ rejected หรือ cancelled
         if (task.status === "rejected" || task.status === "cancelled") {
-            // ถามผู้ใช้ก่อนลบ
-            if (confirm(`Are you sure you want to delete this ${task.status} task?`)) {
-                try {
-                    // ลบงานจากฐานข้อมูล
-                    await deleteTask(task.id);
-
-                    // อัปเดต state ให้ลบงานออกไป
-                    setTasks((prevTasks) => prevTasks.filter((t) => t.id !== task.id));
-
-                    // ถ้า task ที่กำลังแสดงอยู่ใน sidebar คือ task ที่ถูกลบ ให้ปิด sidebar
-                    if (selectedTask?.id === task.id) {
-                        setShowDetailSidebar(false);
-                        setSelectedTask(null);
-                    }
-
-                    // แสดงข้อความว่าลบสำเร็จ
-                    alert(`Task "${task.title}" has been deleted successfully.`);
-                } catch (error) {
-                    console.error("Error deleting task:", error);
-                    alert("Failed to delete task. Please try again.");
-                }
-                return;
-            } else {
-                setSelectedTask(task);
-                setShowDetailSidebar(true);
-
-                // ส่งสถานะไปยัง TaskDetailSidebar เพื่อเข้าโหมด Edit
-                setTimeout(() => {
-                    const sidebar = document.querySelector(".task-detail-sidebar");
-                    if (sidebar) {
-                        sidebar.dispatchEvent(new CustomEvent("enterEditMode"));
-                    }
-                }, 100);
-                return;
-            }
+            // เปิด DeleteModal
+            setTaskToDelete(task);
+            setShowDeleteModal(true);
+            return;
         }
 
         // กรณีไม่ใช่ rejected หรือ cancelled ให้ทำงานปกติ
@@ -97,6 +69,31 @@ export default function Dashboard() {
 
         // อัปเดต selectedTask state
         setSelectedTask(updatedTask);
+    };
+
+    // ฟังก์ชันสำหรับลบงาน
+    const handleDeleteConfirm = async () => {
+        if (!taskToDelete) return;
+
+        try {
+            // ลบงานจากฐานข้อมูล
+            await deleteTask(taskToDelete.id);
+
+            // อัปเดต state ให้ลบงานออกไป
+            setTasks((prevTasks) =>
+                prevTasks.filter((t) => t.id !== taskToDelete.id)
+            );
+
+            // รีเซ็ต Task ที่จะลบ
+            setTaskToDelete(null);
+
+            // ไม่ต้องใช้ alert() เพราะข้อความจะแสดงใน Modal
+        } catch (error) {
+            console.error("Error deleting task:", error);
+            alert("Failed to delete task. Please try again.");
+        } finally {
+            setShowDeleteModal(false); // ปิด Modal หลังจากลบสำเร็จ
+        }
     };
 
     return (
@@ -219,6 +216,15 @@ export default function Dashboard() {
                 onClose={() => setShowDetailSidebar(false)}
                 task={selectedTask}
                 onTaskUpdate={handleTaskUpdate}
+            />
+
+            <DeleteModal
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={handleDeleteConfirm}
+                taskTitle={taskToDelete?.title || ""}
+                taskStatus={taskToDelete?.status || ""}
+                setShowDetailSidebar={setShowDetailSidebar} // ส่งฟังก์ชันเปิด TaskDetailSidebar
             />
         </main>
     );
