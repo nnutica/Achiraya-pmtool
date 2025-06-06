@@ -23,7 +23,7 @@ export default function Dashboard() {
     }, []);
 
     const handleTaskClick = async (task: Task) => {
-        // เช็คว่าเป็นงานที่ rejected หรือ cancelled หรือไม่
+        // ตรวจสอบสถานะ rejected หรือ cancelled
         if (task.status === "rejected" || task.status === "cancelled") {
             // ถามผู้ใช้ก่อนลบ
             if (confirm(`Are you sure you want to delete this ${task.status} task?`)) {
@@ -32,7 +32,7 @@ export default function Dashboard() {
                     await deleteTask(task.id);
 
                     // อัปเดต state ให้ลบงานออกไป
-                    setTasks(prevTasks => prevTasks.filter(t => t.id !== task.id));
+                    setTasks((prevTasks) => prevTasks.filter((t) => t.id !== task.id));
 
                     // ถ้า task ที่กำลังแสดงอยู่ใน sidebar คือ task ที่ถูกลบ ให้ปิด sidebar
                     if (selectedTask?.id === task.id) {
@@ -48,7 +48,16 @@ export default function Dashboard() {
                 }
                 return;
             } else {
-                // ถ้าผู้ใช้กดยกเลิก ไม่ต้องทำอะไร
+                setSelectedTask(task);
+                setShowDetailSidebar(true);
+
+                // ส่งสถานะไปยัง TaskDetailSidebar เพื่อเข้าโหมด Edit
+                setTimeout(() => {
+                    const sidebar = document.querySelector(".task-detail-sidebar");
+                    if (sidebar) {
+                        sidebar.dispatchEvent(new CustomEvent("enterEditMode"));
+                    }
+                }, 100);
                 return;
             }
         }
@@ -62,8 +71,8 @@ export default function Dashboard() {
             try {
                 await updateTask(task.id, { status: "Wait Approve" });
 
-                setTasks(prevTasks =>
-                    prevTasks.map(t =>
+                setTasks((prevTasks) =>
+                    prevTasks.map((t) =>
                         t.id === task.id
                             ? { ...t, status: "Wait Approve" }
                             : t

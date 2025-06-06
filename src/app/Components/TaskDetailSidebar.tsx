@@ -21,6 +21,10 @@ export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate 
     // เมื่อ task เปลี่ยน ให้อัปเดต state สำหรับการแก้ไข
     useEffect(() => {
         if (task) {
+            // รีเซ็ตโหมด Edit เมื่อ Task เปลี่ยน
+            setIsEditing(false);
+
+            // อัปเดตค่าเริ่มต้นสำหรับการแก้ไข
             setEditedDescription(task.description);
             setEditedPriority(task.priority);
             setEditedStatus(task.status);
@@ -105,7 +109,9 @@ export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate 
             >
                 {/* ส่วนหัว */}
                 <div className="flex justify-between items-center mb-6 sticky top-0 bg-white pt-2 z-10">
-                    <h2 className="text-2xl font-bold">Task Details</h2>
+                    <h2 className="text-2xl font-bold">
+                        {isEditing ? task.title : "Task Details"}
+                    </h2>
                     <button
                         onClick={onClose}
                         className="text-gray-500 hover:text-gray-700"
@@ -114,10 +120,12 @@ export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate 
                     </button>
                 </div>
 
-                {/* ชื่องาน */}
-                <div className="mb-6">
-                    <h1 className="text-2xl font-bold">{task.title}</h1>
-                </div>
+                {/* ชื่องาน - แสดงเฉพาะเมื่อไม่ได้อยู่ในโหมดแก้ไข */}
+                {!isEditing && (
+                    <div className="mb-6">
+                        <h1 className="text-2xl font-bold">{task.title}</h1>
+                    </div>
+                )}
 
                 {/* แท็กสถานะและความสำคัญ */}
                 <div className="flex gap-2 mb-6">
@@ -126,38 +134,7 @@ export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate 
                             <Badge type="status" value={task.status} />
                             <Badge type="priority" value={task.priority} />
                         </>
-                    ) : (
-                        <div className="w-full flex flex-col gap-2">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                                <select
-                                    value={editedStatus}
-                                    onChange={(e) => setEditedStatus(e.target.value)}
-                                    className="w-full border rounded-lg px-3 py-2"
-                                >
-                                    <option value="Unread">Unread</option>
-                                    <option value="in-progress">In Progress</option>
-                                    <option value="Wait Approve">Wait Approve</option>
-                                    <option value="done">Done</option>
-                                    <option value="rejected">Rejected</option>
-                                    <option value="cancelled">Cancelled</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-                                <select
-                                    value={editedPriority}
-                                    onChange={(e) => setEditedPriority(e.target.value)}
-                                    className="w-full border rounded-lg px-3 py-2"
-                                >
-                                    <option value="Low">Low</option>
-                                    <option value="Medium">Medium</option>
-                                    <option value="High">High</option>
-                                    <option value="Urgent">Urgent</option>
-                                </select>
-                            </div>
-                        </div>
-                    )}
+                    ) : null}
                 </div>
 
                 {/* รายละเอียด */}
@@ -176,6 +153,41 @@ export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate 
                         />
                     )}
                 </div>
+
+                {/* Priority และ Status (แสดงเฉพาะเมื่อ edit) */}
+                {isEditing && (
+                    <div className="space-y-4 mb-6">
+                        <div>
+                            <label className="block text-lg font-semibold mb-2">Priority</label>
+                            <select
+                                value={editedPriority}
+                                onChange={(e) => setEditedPriority(e.target.value)}
+                                className="w-full border rounded-lg px-3 py-2"
+                            >
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                                <option value="Urgent">Urgent</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-lg font-semibold mb-2">Status</label>
+                            <select
+                                value={editedStatus}
+                                onChange={(e) => setEditedStatus(e.target.value)}
+                                className="w-full border rounded-lg px-3 py-2"
+                            >
+                                <option value="Unread">Unread</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="Wait Approve">Wait Approve</option>
+                                <option value="done">Done</option>
+                                <option value="rejected">Rejected</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+                )}
 
                 {/* วันที่สร้างและอัปเดต */}
                 <div className="mb-6 text-sm text-gray-500">
