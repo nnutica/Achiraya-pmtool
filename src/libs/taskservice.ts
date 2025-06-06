@@ -80,3 +80,17 @@ export const fetchTasksByPriority = async (priority: TaskPriority): Promise<Task
     });
     return tasks;
 };
+
+export const fetchTasksByProjectId = async (projectId: string): Promise<Task[]> => {
+    const tasksCollection = collection(db, "tasks");
+    const q = query(
+        tasksCollection,
+        where("projectId", "==", projectId), // กรอง Task ตาม projectId
+        orderBy("createdAt", "asc") // เรียงตาม createdAt
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+    })) as Task[];
+};

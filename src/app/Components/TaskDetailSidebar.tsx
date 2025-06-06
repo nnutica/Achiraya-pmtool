@@ -16,6 +16,7 @@ export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate 
     const [editedDescription, setEditedDescription] = useState("");
     const [editedPriority, setEditedPriority] = useState("");
     const [editedStatus, setEditedStatus] = useState("");
+    const [editedDueDate, setEditedDueDate] = useState("");
 
 
     // เมื่อ task เปลี่ยน ให้อัปเดต state สำหรับการแก้ไข
@@ -28,6 +29,7 @@ export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate 
             setEditedDescription(task.description);
             setEditedPriority(task.priority);
             setEditedStatus(task.status);
+            setEditedDueDate(task.dueDate?.split("T")[0] || ""); // แปลงรูปแบบวันที่ให้ตรงกับ input type="date"
             console.log("Task updated in sidebar:", task.status);
         }
     }, [task]);
@@ -61,6 +63,7 @@ export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate 
             setEditedDescription(task.description);
             setEditedPriority(task.priority);
             setEditedStatus(task.status);
+            setEditedDueDate(task.dueDate?.split("T")[0] || ""); // แปลงรูปแบบวันที่ให้ตรงกับ input type="date"
         }
     };
 
@@ -69,25 +72,24 @@ export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate 
         if (!task) return;
 
         try {
-            // อัปเดตข้อมูลใน Firebase
             await updateTask(task.id, {
                 description: editedDescription,
                 priority: editedPriority as TaskPriority,
                 status: editedStatus as Taskstatus,
+                dueDate: editedDueDate || null, // เพิ่ม DueDate
             });
 
-            // อัปเดต state ของ parent component
             if (onTaskUpdate) {
                 onTaskUpdate({
                     ...task,
                     description: editedDescription,
                     priority: editedPriority as TaskPriority,
                     status: editedStatus as Taskstatus,
+                    dueDate: editedDueDate || null, // อัปเดต DueDate
                     updatedAt: new Date().toISOString(),
                 });
             }
 
-            // ปิดโหมดแก้ไข
             setIsEditing(false);
         } catch (error) {
             console.error("Error updating task:", error);
@@ -124,6 +126,7 @@ export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate 
                 {!isEditing && (
                     <div className="mb-6">
                         <h1 className="text-2xl font-bold">{task.title}</h1>
+                        <p className="text-sm text-gray-500">Project ID: {task.projectId}</p> {/* แสดง Project ID */}
                     </div>
                 )}
 
@@ -141,9 +144,14 @@ export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate 
                 <div className="mb-6">
                     <h3 className="text-lg font-semibold mb-2">Description</h3>
                     {!isEditing ? (
-                        <p className="text-gray-700 whitespace-pre-wrap">
-                            {task.description || "No description available"}
-                        </p>
+                        <>
+                            <p className="text-gray-700 whitespace-pre-wrap">
+                                {task.description || "No description available"}
+                            </p>
+                            <p className="text-sm text-gray-500 mt-2">
+                                Due Date: {task.dueDate ? formatDate(task.dueDate) : "Not specified"}
+                            </p>
+                        </>
                     ) : (
                         <textarea
                             value={editedDescription}
@@ -154,7 +162,7 @@ export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate 
                     )}
                 </div>
 
-                {/* Priority และ Status (แสดงเฉพาะเมื่อ edit) */}
+                {/* Priority, Status และ DueDate (แสดงเฉพาะเมื่อ edit) */}
                 {isEditing && (
                     <div className="space-y-4 mb-6">
                         <div>
@@ -185,6 +193,16 @@ export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate 
                                 <option value="rejected">Rejected</option>
                                 <option value="cancelled">Cancelled</option>
                             </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-lg font-semibold mb-2">Due Date</label>
+                            <input
+                                type="date"
+                                value={editedDueDate}
+                                onChange={(e) => setEditedDueDate(e.target.value)}
+                                className="w-full border rounded-lg px-3 py-2"
+                            />
                         </div>
                     </div>
                 )}

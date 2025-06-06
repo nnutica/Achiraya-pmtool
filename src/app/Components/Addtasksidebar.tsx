@@ -7,9 +7,10 @@ import { TaskPriority, Taskstatus } from "@/types/task";
 interface Props {
     isOpen: boolean;
     onClose: () => void;
+    projectId: string; // เพิ่ม projectId เพื่อเชื่อม Task กับ Project
 }
 
-export default function AddTaskSidebar({ isOpen, onClose }: Props) {
+export default function AddTaskSidebar({ isOpen, onClose, projectId }: Props) {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [priority, setPriority] = useState<TaskPriority>("Medium");
@@ -25,9 +26,9 @@ export default function AddTaskSidebar({ isOpen, onClose }: Props) {
             description,
             status,
             priority,
-            // เปลี่ยนจากการสร้าง Date object เป็นการส่ง string โดยตรง
             dueDate: dueDate || null,
-            comments: []
+            comments: [],
+            projectId, // เชื่อม Task กับ Project
         });
 
         onClose(); // ปิด sidebar
