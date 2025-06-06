@@ -14,7 +14,7 @@ export const fetchTasks = async (): Promise<Task[]> => {
 };
 
 export const addTask = async (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const now = new Date();
+    const now = new Date().toISOString(); // เปลี่ยนเป็น ISO string
     const taskWithMeta = {
         ...task,
         createdAt: now,
@@ -26,7 +26,12 @@ export const addTask = async (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>
 };
 
 export const updateTask = async (id: string, updates: Partial<Task>) => {
-    return await updateDoc(doc(db, "tasks", id), updates);
+    // ถ้ามีการอัปเดต ให้อัปเดต updatedAt ด้วย
+    const updatesWithMeta = {
+        ...updates,
+        updatedAt: new Date().toISOString(), // เปลี่ยนเป็น ISO string
+    };
+    return await updateDoc(doc(db, "tasks", id), updatesWithMeta);
 };
 
 export const deleteTask = async (id: string) => {
@@ -39,14 +44,14 @@ export const addComment = async (
         id: string;
         author: string;
         message: string;
-        createdAt: Date;
+        createdAt: string; // เปลี่ยนเป็น string
     }
 ) => {
     const taskDoc = doc(db, "tasks", taskId);
     const { arrayUnion, updateDoc } = await import("firebase/firestore");
     return await updateDoc(taskDoc, {
         comments: arrayUnion(comment),
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(), // เปลี่ยนเป็น ISO string
     });
 };
 

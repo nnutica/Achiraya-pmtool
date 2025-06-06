@@ -11,10 +11,11 @@ const badgeStyleMap: Record<BadgeProps["type"], Record<string, string>> = {
         Low: "bg-green-100 text-green-800",
     },
     status: {
-        Unread: "bg-gray-200 text-gray-800",
+        Unread: "bg-gray-200 text-gray-600", // ปรับเป็นสีเทาจางๆเข้มๆ
         "in-progress": "bg-blue-100 text-blue-800",
         "Wait Approve": "bg-purple-100 text-purple-800",
         done: "bg-green-200 text-green-900",
+        rejected: "bg-red-200 text-red-900",
     },
 };
 

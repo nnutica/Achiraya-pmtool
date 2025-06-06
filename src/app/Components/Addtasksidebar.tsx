@@ -25,78 +25,122 @@ export default function AddTaskSidebar({ isOpen, onClose }: Props) {
             description,
             status,
             priority,
-            dueDate: dueDate ? new Date(dueDate) : null,
+            // เปลี่ยนจากการสร้าง Date object เป็นการส่ง string โดยตรง
+            dueDate: dueDate || null,
             comments: []
         });
-
 
         onClose(); // ปิด sidebar
         setTitle("");
         setDescription("");
-        setDueDate("null");
+        setDueDate("");
     };
 
-    return (
-        <div
-            className={`fixed top-0 right-0 h-full w-full sm:w-[400px] bg-white shadow-lg transform transition-transform duration-300 z-50 ${isOpen ? "translate-x-0" : "translate-x-full"
-                }`}
-        >
-            <div className="flex items-center justify-between p-4 border-b">
-                <h2 className="text-xl font-bold">➕ Add Task</h2>
-                <button onClick={onClose} className="text-gray-600 hover:text-red-500 text-2xl font-bold">
-                    ×
-                </button>
-            </div>
+    if (!isOpen) return null;
 
-            <form onSubmit={handleSubmit} className="p-4 flex flex-col gap-4">
-                <input
-                    type="text"
-                    placeholder="Title"
-                    className="border rounded px-3 py-2"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    required
-                />
-                <textarea
-                    placeholder="Description"
-                    className="border rounded px-3 py-2"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    required
-                />
-                <select
-                    className="border rounded px-3 py-2"
-                    value={priority}
-                    onChange={(e) => setPriority(e.target.value as TaskPriority)}
-                >
-                    <option value="Low">Low</option>
-                    <option value="Medium">Medium</option>
-                    <option value="High">High</option>
-                    <option value="Urgent">Urgent</option>
-                </select>
-                <select
-                    className="border rounded px-3 py-2"
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value as Taskstatus)}
-                >
-                    <option value="Unread">Unread</option>
-                    <option value="in-progress">In Progress</option>
-                    <option value="Wait Approve">Wait Approve</option>
-                    <option value="done">Done</option>
-                </select>
-                <input
-                    type="date"
-                    className="border rounded px-3 py-2"
-                    value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
-                />
-                <button
-                    type="submit"
-                    className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
-                >
-                    Create Task
-                </button>
-            </form>
+    return (
+        <div className="fixed inset-0 z-40 flex justify-end">
+            {/* Background overlay with fade-in */}
+            <div
+                className="fixed inset-0 transition-opacity duration-300 ease-in-out"
+                style={{ opacity: isOpen ? 1 : 0 }}
+                onClick={onClose}
+            ></div>
+
+            {/* Sidebar with slide-in */}
+            <div
+                className="w-full sm:w-[400px] bg-white shadow-lg rounded-l-3xl flex flex-col h-[calc(100%-4rem)] mt-16 relative transition-transform duration-300 ease-in-out"
+                style={{ transform: isOpen ? 'translateX(0)' : 'translateX(100%)' }}
+            >
+                {/* Header - fixed at top */}
+                <div className="flex items-center justify-between p-4 border-b">
+                    <h2 className="text-xl font-bold">➕ Add Task</h2>
+                    <button
+                        onClick={onClose}
+                        className="text-gray-600 hover:text-red-500 text-2xl font-bold"
+                    >
+                        ×
+                    </button>
+                </div>
+
+                {/* เนื้อหายังคงเหมือนเดิม */}
+                <div className="flex-1 overflow-y-auto p-4">
+                    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                        <div className="space-y-2">
+                            <label htmlFor="title" className="text-sm font-medium text-gray-700">Title</label>
+                            <input
+                                id="title"
+                                type="text"
+                                placeholder="Enter task title"
+                                className="w-full border rounded-lg px-3 py-2"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label htmlFor="description" className="text-sm font-medium text-gray-700">Description</label>
+                            <textarea
+                                id="description"
+                                placeholder="Enter task description"
+                                className="w-full border rounded-lg px-3 py-2 min-h-[100px]"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label htmlFor="priority" className="text-sm font-medium text-gray-700">Priority</label>
+                            <select
+                                id="priority"
+                                className="w-full border rounded-lg px-3 py-2"
+                                value={priority}
+                                onChange={(e) => setPriority(e.target.value as TaskPriority)}
+                            >
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                                <option value="Urgent">Urgent</option>
+                            </select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label htmlFor="status" className="text-sm font-medium text-gray-700">Status</label>
+                            <select
+                                id="status"
+                                className="w-full border rounded-lg px-3 py-2"
+                                value={status}
+                                onChange={(e) => setStatus(e.target.value as Taskstatus)}
+                            >
+                                <option value="Unread">Unread</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="Wait Approve">Wait Approve</option>
+                                <option value="done">Done</option>
+                            </select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label htmlFor="dueDate" className="text-sm font-medium text-gray-700">Due Date</label>
+                            <input
+                                id="dueDate"
+                                type="date"
+                                className="w-full border rounded-lg px-3 py-2"
+                                value={dueDate}
+                                onChange={(e) => setDueDate(e.target.value)}
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="mt-4 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                        >
+                            Create Task
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     );
 }
