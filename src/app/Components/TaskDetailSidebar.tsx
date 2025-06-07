@@ -1,7 +1,8 @@
 import { Task, TaskPriority, Taskstatus } from "@/types/task";
 import { useEffect, useRef, useState } from "react";
 import Badge from "./Badge";
-import { updateTask } from "@/libs/taskservice";
+import { updateTask, addComment, fetchTaskById } from "@/libs/taskservice"; // นำเข้า fetchTaskById
+import { useAuth } from "./AuthProvider"; // Import useAuth สำหรับ currentUser
 
 interface TaskDetailSidebarProps {
     isOpen: boolean;
@@ -12,11 +13,14 @@ interface TaskDetailSidebarProps {
 
 export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate }: TaskDetailSidebarProps) {
     const sidebarRef = useRef<HTMLDivElement>(null);
+    const { currentUser } = useAuth(); // ดึง currentUser จาก AuthProvider
     const [isEditing, setIsEditing] = useState(false);
     const [editedDescription, setEditedDescription] = useState("");
     const [editedPriority, setEditedPriority] = useState("");
     const [editedStatus, setEditedStatus] = useState("");
     const [editedDueDate, setEditedDueDate] = useState("");
+    const [newComment, setNewComment] = useState("");
+    const [newAuthor, setNewAuthor] = useState(currentUser?.displayName || "");
 
 
     // เมื่อ task เปลี่ยน ให้อัปเดต state สำหรับการแก้ไข
@@ -52,7 +56,7 @@ export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate 
     }, [isOpen, onClose]);
 
 
-    if (!isOpen || !task) return null;
+    if (!isOpen || !task) return null; // ตรวจสอบว่า task ไม่เป็น null ก่อนแสดง Sidebar
 
     // ฟังก์ชันเปิด/ปิดโหมดการแก้ไข
     const toggleEditMode = () => {
@@ -97,6 +101,41 @@ export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate 
         }
     };
 
+    const handleAddComment = async () => {
+        if (!task) {
+            console.error("Task is null. Cannot add comment.");
+            return;
+        }
+
+        if (!newComment.trim()) return;
+
+        const comment = {
+            id: crypto.randomUUID(),
+            author: newAuthor || currentUser?.displayName || "Anonymous",
+            message: newComment,
+            createdAt: new Date().toISOString(),
+        };
+
+        try {
+            await addComment(task.id, comment); // เพิ่ม Comment ลงใน Task
+
+            // Fetch Task ใหม่หลังจากเพิ่ม Comment
+            if (onTaskUpdate) {
+                const updatedTask = await fetchTaskById(task.id); // ดึง Task ใหม่จาก API
+                if (updatedTask) {
+                    onTaskUpdate(updatedTask); // อัปเดต Task ในหน้าหลัก
+                }
+            }
+
+            // รีเซ็ตฟอร์ม
+            setNewComment("");
+            setNewAuthor("");
+        } catch (error) {
+            console.error("Error adding comment:", error);
+            alert("Failed to add comment. Please try again.");
+        }
+    };
+
     return (
         <div className="fixed inset-0 z-40 flex justify-end">
             {/* Overlay ที่ใสไม่มีสี */}
@@ -126,7 +165,7 @@ export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate 
                 {!isEditing && (
                     <div className="mb-6">
                         <h1 className="text-2xl font-bold">{task.title}</h1>
-                        <p className="text-sm text-gray-500">Project ID: {task.projectId}</p> {/* แสดง Project ID */}
+
                     </div>
                 )}
 
@@ -233,6 +272,27 @@ export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate 
                     )}
                 </div>
 
+                {/* ฟอร์มเพิ่ม Comment */}
+                {!isEditing && (
+                    <div className="mb-6">
+                        <h3 className="text-lg font-semibold mb-2">Add Comment</h3>
+                        <input
+                            type="text"
+                            value={newAuthor}
+                            onChange={(e) => setNewAuthor(e.target.value)}
+                            placeholder="Enter your name"
+                            className="border rounded-lg px-3 py-2 mb-2 w-full"
+                        />
+                        <textarea
+                            value={newComment}
+                            onChange={(e) => setNewComment(e.target.value)}
+                            placeholder="Write your comment"
+                            className="border rounded-lg px-3 py-2 min-h-[100px] w-full"
+                        />
+
+                    </div>
+                )}
+
                 {/* ปุ่มดำเนินการ */}
                 <div className="flex gap-3 mt-6">
                     {!isEditing ? (
@@ -243,8 +303,11 @@ export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate 
                             >
                                 Edit
                             </button>
-                            <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex-1">
-                                Add Comment
+                            <button
+                                onClick={handleAddComment}
+                                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 mt-2"
+                            >
+                                Submit Comment
                             </button>
                         </>
                     ) : (

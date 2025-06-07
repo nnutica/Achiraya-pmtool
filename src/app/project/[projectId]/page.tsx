@@ -2,50 +2,41 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { fetchTasksByProjectId, deleteTask } from "@/libs/taskservice";
+import { fetchProjectById } from "@/libs/projectService"; // ฟังก์ชันสำหรับดึงข้อมูลโปรเจค
+import { Project } from "@/types/project";
 import { Task } from "@/types/task";
 import TaskCard from "@/app/Components/TaskCard";
 import AddTaskSidebar from "@/app/Components/Addtasksidebar";
 import TaskDetailSidebar from "@/app/Components/TaskDetailSidebar";
-import DeleteModal from "@/app/Components/DeleteModal"; // Import DeleteModal
+import DeleteModal from "@/app/Components/DeleteModal";
+import { deleteTask, fetchTasksByProjectId } from "@/libs/taskservice";
 
 export default function ProjectDetail({ params }: { params: Promise<{ projectId: string }> }) {
+    const [project, setProject] = useState<Project | null>(null); // State สำหรับข้อมูลโปรเจค
     const [tasks, setTasks] = useState<Task[]>([]);
     const [showAddSidebar, setShowAddSidebar] = useState(false);
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-    const [projectId, setProjectId] = useState<string | null>(null);
-    const [showDeleteModal, setShowDeleteModal] = useState(false); // State สำหรับ DeleteModal
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
     const router = useRouter();
 
-    // Unwrap params
     useEffect(() => {
-        const unwrapParams = async () => {
+        const loadProjectAndTasks = async () => {
             const resolvedParams = await params;
-            setProjectId(resolvedParams.projectId); // ตั้งค่า projectId
+            const projectData = await fetchProjectById(resolvedParams.projectId); // ดึงข้อมูลโปรเจค
+            setProject(projectData);
+
+            if (projectData?.id) {
+                const taskData = await fetchTasksByProjectId(projectData.id); // ดึงข้อมูล Task
+                setTasks(taskData);
+            }
         };
-        unwrapParams();
+        loadProjectAndTasks();
     }, [params]);
 
-    // ดึง Task เฉพาะใน Project
-    useEffect(() => {
-        if (projectId) {
-            const loadTasks = async () => {
-                const data = await fetchTasksByProjectId(projectId);
-                console.log("Tasks fetched:", data); // ตรวจสอบข้อมูล Task ที่ดึงมา
-                setTasks(data);
-            };
-            loadTasks();
-        }
-    }, [projectId]);
-
-    const handleTaskClick = (task: Task) => {
-        setSelectedTask(task);
-    };
-
     const handleTaskUpdate = async () => {
-        if (projectId) {
-            const updatedTasks = await fetchTasksByProjectId(projectId);
-            setTasks(updatedTasks); // อัปเดต State tasks
+        if (project?.id) {
+            const updatedTasks = await fetchTasksByProjectId(project.id);
+            setTasks(updatedTasks);
         }
     };
 
@@ -65,13 +56,15 @@ export default function ProjectDetail({ params }: { params: Promise<{ projectId:
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h1 className="text-2xl font-bold mb-6">Tasks in Project</h1>
-            <button
-                onClick={() => setShowAddSidebar(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mb-6"
-            >
-                Add Task
-            </button>
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-2xl font-bold text-white">{project?.name || "Project Name"}</h1> {/* แสดงชื่อโปรเจค */}
+                <button
+                    onClick={() => setShowAddSidebar(true)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                >
+                    Add Task
+                </button>
+            </div>
 
             {/* Render tasks grouped by priority */}
             {["Urgent", "High", "Medium", "Low"].map((priority) => {
@@ -87,11 +80,11 @@ export default function ProjectDetail({ params }: { params: Promise<{ projectId:
                                     key={task.id}
                                     task={task}
                                     onClick={() => {
-                                        if (task.status === "rejected" || task.status === "cancelled") {
-                                            setSelectedTask(task); // ตั้งค่า Task ที่เลือก
-                                            setShowDeleteModal(true); // เปิด DeleteModal
+                                        if (task.status === "rejected") {
+                                            setSelectedTask(task);
+                                            setShowDeleteModal(true);
                                         } else {
-                                            setSelectedTask(task); // เปิด TaskDetailSidebar ตามปกติ
+                                            setSelectedTask(task);
                                         }
                                     }}
                                 />
@@ -104,7 +97,8 @@ export default function ProjectDetail({ params }: { params: Promise<{ projectId:
             <AddTaskSidebar
                 isOpen={showAddSidebar}
                 onClose={() => setShowAddSidebar(false)}
-                projectId={projectId || ""}
+                projectId={project?.id || ""}
+                onTaskAdded={handleTaskUpdate} // Callback เมื่อ Task ถูกเพิ่ม
             />
             {selectedTask && (
                 <TaskDetailSidebar

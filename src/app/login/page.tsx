@@ -21,10 +21,10 @@ export default function Login() {
     };
 
     return (
-        <div className="flex h-screen bg-sky-300">
+        <div className="flex h-screen bg-indigo-600">
             <div className="hidden lg:block relative flex-[6] rounded-4xl">
                 <Image
-                    src="/achiraya.png"
+                    src="/achirayatn.png"
                     alt="thumbnail page"
                     fill
                     style={{
@@ -33,9 +33,10 @@ export default function Login() {
                     }}
                 />
             </div>
-            <div className="bg-sky-300 flex-[6] p-8 sm:p-20 md:p-32 lg:p-36 w-full">
+            <div className="bg-indigo-800 flex-[6] p-8 sm:p-20 md:p-32 lg:p-36 w-full">
                 <div className="bg-white rounded-4xl p-8 sm:p-12 md:p-16 lg:p-20 shadow-lg">
-                    <h1 className="text-2xl font-bold mb-4">Login</h1>
+                    <h1 className="text-3xl font-bold mb-6 text-center text-blue-600">Achiraya Welcome</h1>
+                    <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
                     {error && <p className="text-red-500 mb-4">{error}</p>}
                     <form onSubmit={handleLogin}>
                         <div className="mb-4">

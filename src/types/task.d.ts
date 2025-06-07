@@ -1,4 +1,4 @@
-export type Taskstatus = "Unread" | "In-progress" | "Wait Approve" | "done" | "rejected" | "cancelled";
+export type Taskstatus = "Unread" | "In-progress" | "Wait Approve" | "done" | "rejected";
 export type TaskPriority = "Low" | "Medium" | "High" | "Urgent";
 
 

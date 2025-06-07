@@ -11,7 +11,7 @@ export default function AddProjectModal({ isOpen, onClose, onCreate }: AddProjec
     const [description, setDescription] = useState("");
 
     const handleSubmit = () => {
-        onCreate(name, description);
+        onCreate(name, description); // ส่งข้อมูล Description พร้อม line breaks
         setName("");
         setDescription("");
         onClose();
@@ -20,8 +20,17 @@ export default function AddProjectModal({ isOpen, onClose, onCreate }: AddProjec
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+        <div className="fixed inset-0 z-40 flex justify-end">
+            {/* Overlay */}
+            <div
+                className="fixed inset-0  z-30"
+                onClick={onClose}
+            ></div>
+
+            {/* Modal */}
+            <div
+                className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mt-16  z-40 relative"
+            >
                 <h2 className="text-xl font-bold mb-4">Add Project</h2>
                 <input
                     type="text"
@@ -36,6 +45,7 @@ export default function AddProjectModal({ isOpen, onClose, onCreate }: AddProjec
                     onChange={(e) => setDescription(e.target.value)}
                     className="w-full border rounded-lg px-3 py-2 mb-4"
                 />
+
                 <button
                     onClick={handleSubmit}
                     className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"

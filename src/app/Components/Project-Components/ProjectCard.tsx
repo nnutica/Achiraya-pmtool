@@ -16,7 +16,12 @@ export default function ProjectCard({ project, onClick }: ProjectCardProps) {
             onClick={onClick} // เรียกฟังก์ชัน onClick เมื่อคลิก
         >
             <h2 className="text-xl font-bold">{project.name}</h2>
-            <p className="text-gray-600">{project.description}</p>
+            {/* แสดง Description พร้อม line breaks */}
+            <div className="text-gray-600">
+                {project.description.split("\n").map((line, index) => (
+                    <p key={index}>{line}</p>
+                ))}
+            </div>
         </div>
     );
 }

@@ -1,5 +1,5 @@
 import { db } from "./firebase";
-import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, where, orderBy } from "firebase/firestore";
+import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, where, orderBy, getDoc } from "firebase/firestore";
 
 export interface Project {
     id: string;
@@ -46,4 +46,19 @@ export const updateProject = async (id: string, updates: Partial<Project>) => {
 
 export const deleteProject = async (id: string) => {
     return await deleteDoc(doc(db, "projects", id));
+};
+
+export const fetchProjectById = async (projectId: string): Promise<Project | null> => {
+    const docRef = doc(db, "projects", projectId); // อ้างอิงถึงเอกสารใน Firestore
+    const docSnap = await getDoc(docRef); // ดึงข้อมูลเอกสาร
+
+    if (docSnap.exists()) {
+        return {
+            id: docSnap.id,
+            ...docSnap.data(),
+        } as Project; // แปลงข้อมูลเป็น Project
+    } else {
+        console.error(`Project with ID ${projectId} not found.`);
+        return null; // คืนค่า null หากไม่มีเอกสาร
+    }
 };

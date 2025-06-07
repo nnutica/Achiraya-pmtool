@@ -1,5 +1,5 @@
 import { db } from "./firebase";
-import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, where, orderBy, QueryConstraint } from "firebase/firestore";
+import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, where, orderBy, QueryConstraint, getDoc } from "firebase/firestore";
 import { Task, TaskPriority, Taskstatus } from "../types/task";
 
 const tasksCollection = collection(db, "tasks");
@@ -93,4 +93,19 @@ export const fetchTasksByProjectId = async (projectId: string): Promise<Task[]> 
         id: doc.id,
         ...doc.data(),
     })) as Task[];
+};
+
+export const fetchTaskById = async (taskId: string): Promise<Task | null> => {
+    const taskRef = doc(db, "tasks", taskId); // อ้างอิงถึงเอกสารใน Firestore
+    const taskSnap = await getDoc(taskRef); // ดึงข้อมูลเอกสาร
+
+    if (taskSnap.exists()) {
+        return {
+            id: taskSnap.id,
+            ...taskSnap.data(),
+        } as Task; // แปลงข้อมูลเป็น Task
+    } else {
+        console.error(`Task with ID ${taskId} not found.`);
+        return null; // คืนค่า null หากไม่มีเอกสาร
+    }
 };
