@@ -3,6 +3,7 @@ import React from "react";
 interface Member {
     id: string;
     name: string;
+    role?: "Admin" | "Member" | "StackHolder";
 }
 
 interface ProjectCardProps {
@@ -33,7 +34,7 @@ export default function ProjectTable({ projects, onProjectClick, onProjectDetail
             <div className="w-full max-w-6xl bg-white rounded-xl shadow-lg overflow-hidden">
                 <table className="table-auto w-full border-collapse border border-gray-300">
                     <thead>
-                        <tr className="bg-blue-900 text-gray-300">
+                        <tr className="bg-sky-800 text-gray-300">
                             <th className="border px-6 py-4 text-left text-lg">Project Name</th>
                             <th className="border px-6 py-4 text-left text-lg">Description</th>
                             <th className="border px-6 py-4 text-center text-lg">Members</th>
@@ -55,7 +56,19 @@ export default function ProjectTable({ projects, onProjectClick, onProjectDetail
                                         .join("\n")}
                                     {project.description.split("\n").length > 5 && " ..."}
                                 </td>
-                                <td className="border px-6 py-3 text-center text-blue-800 font-medium">{project.members.length}</td>
+                                <td className="border px-6 py-3 text-start text-blue-800 font-medium">
+                                    {project.members.length > 0 ? (
+                                        <ul className="list-disc pl-5">
+                                            {project.members.map((member) => (
+                                                <li key={member.id}>
+                                                    {member.name} - {member.role || "No role specified"}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <span className="text-gray-500">No members</span>
+                                    )}
+                                </td>
                                 <td className="border px-6 py-3 text-center">
                                     <button
                                         onClick={(e) => {
