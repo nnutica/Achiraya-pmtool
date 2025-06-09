@@ -2,17 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { fetchProjectById } from "@/libs/projectService"; // ฟังก์ชันสำหรับดึงข้อมูลโปรเจค
+import { fetchProjectById } from "@/libs/projectService";
 import { Project } from "@/types/project";
 import { Task } from "@/types/task";
 import TaskCard from "@/app/Components/TaskCard";
 import AddTaskSidebar from "@/app/Components/Addtasksidebar";
 import TaskDetailSidebar from "@/app/Components/TaskDetailSidebar";
 import DeleteModal from "@/app/Components/DeleteModal";
-import { deleteTask, fetchTasksByProjectId } from "@/libs/taskservice";
+import { deleteTask, fetchTasksByProjectId, updateTaskStatus } from "@/libs/taskservice";
 
 export default function ProjectDetail({ params }: { params: Promise<{ projectId: string }> }) {
-    const [project, setProject] = useState<Project | null>(null); // State สำหรับข้อมูลโปรเจค
+    const [project, setProject] = useState<Project | null>(null);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [showAddSidebar, setShowAddSidebar] = useState(false);
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -22,11 +22,11 @@ export default function ProjectDetail({ params }: { params: Promise<{ projectId:
     useEffect(() => {
         const loadProjectAndTasks = async () => {
             const resolvedParams = await params;
-            const projectData = await fetchProjectById(resolvedParams.projectId); // ดึงข้อมูลโปรเจค
+            const projectData = await fetchProjectById(resolvedParams.projectId);
             setProject(projectData);
 
             if (projectData?.id) {
-                const taskData = await fetchTasksByProjectId(projectData.id); // ดึงข้อมูล Task
+                const taskData = await fetchTasksByProjectId(projectData.id);
                 setTasks(taskData);
             }
         };
@@ -44,10 +44,10 @@ export default function ProjectDetail({ params }: { params: Promise<{ projectId:
         if (!selectedTask) return;
 
         try {
-            await deleteTask(selectedTask.id); // ลบ Task
-            setTasks((prevTasks) => prevTasks.filter((task) => task.id !== selectedTask.id)); // อัปเดต State
-            setShowDeleteModal(false); // ปิด Modal
-            setSelectedTask(null); // ปิด Sidebar
+            await deleteTask(selectedTask.id);
+            setTasks((prevTasks) => prevTasks.filter((task) => task.id !== selectedTask.id));
+            setShowDeleteModal(false);
+            setSelectedTask(null);
         } catch (error) {
             console.error("Error deleting task:", error);
             alert("Failed to delete task. Please try again.");
@@ -55,31 +55,57 @@ export default function ProjectDetail({ params }: { params: Promise<{ projectId:
     };
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-white">{project?.name || "Project Name"}</h1> {/* แสดงชื่อโปรเจค */}
+        <div className="min-h-screen bg-blue-900 text-white px-4 py-8">
+            {/* หัวโปรเจกต์ + ปุ่มเพิ่ม Task */}
+            <div className="flex justify-between items-center mb-8 border-b border-gray-700 pb-4">
+                <h1 className="text-3xl font-extrabold tracking-tight">
+                    {project?.name || "Project Name"}
+                </h1>
                 <button
                     onClick={() => setShowAddSidebar(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2 rounded-xl shadow-md transition"
                 >
-                    Add Task
+                    + Add Task
                 </button>
             </div>
 
             {/* Render tasks grouped by priority */}
-            {["Urgent", "High", "Medium", "Low"].map((priority) => {
+            {(["Urgent", "High", "Medium", "Low"] as const).map((priority) => {
                 const filteredTasks = tasks.filter((task) => task.priority === priority);
                 if (filteredTasks.length === 0) return null;
 
+                const priorityColor: Record<"Urgent" | "High" | "Medium" | "Low", string> = {
+                    Urgent: "border-red-500",
+                    High: "border-orange-400",
+                    Medium: "border-yellow-400",
+                    Low: "border-green-400"
+                };
+
                 return (
-                    <div key={priority} className="mb-8">
-                        <h2 className="text-xl font-semibold mb-4">{priority} Priority</h2>
+                    <div key={priority} className="mb-10">
+                        <h2 className={`text-2xl font-semibold mb-4 pl-3 border-l-4 ${priorityColor[priority]}`}>
+                            {priority} Priority
+                        </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {filteredTasks.map((task) => (
                                 <TaskCard
                                     key={task.id}
                                     task={task}
-                                    onClick={() => {
+                                    onClick={async () => {
+                                        if (task.status === "Unread") {
+                                            try {
+                                                await updateTaskStatus(task.id, "In-progress");
+                                                setTasks((prevTasks) =>
+                                                    prevTasks.map((t) =>
+                                                        t.id === task.id ? { ...t, status: "In-progress" } : t
+                                                    )
+                                                );
+                                            } catch (error) {
+                                                console.error("Error updating task status:", error);
+                                                alert("Failed to update task status. Please try again.");
+                                            }
+                                        }
+
                                         if (task.status === "rejected") {
                                             setSelectedTask(task);
                                             setShowDeleteModal(true);
@@ -98,31 +124,32 @@ export default function ProjectDetail({ params }: { params: Promise<{ projectId:
                 isOpen={showAddSidebar}
                 onClose={() => setShowAddSidebar(false)}
                 projectId={project?.id || ""}
-                onTaskAdded={handleTaskUpdate} // Callback เมื่อ Task ถูกเพิ่ม
+                onTaskAdded={handleTaskUpdate}
             />
-            {selectedTask && (
+
+            {selectedTask && project && (
                 <TaskDetailSidebar
                     isOpen={!!selectedTask}
                     onClose={() => setSelectedTask(null)}
                     task={selectedTask}
+                    project={project} // ส่ง project เข้ามา
                     onTaskUpdate={handleTaskUpdate}
                 />
             )}
 
-            {/* Delete Modal */}
             <DeleteModal
                 isOpen={showDeleteModal}
                 onClose={() => {
-                    setShowDeleteModal(false); // ปิด Modal
-                    setSelectedTask(null); // เปิด TaskDetailSidebar ตามปกติ
+                    setShowDeleteModal(false);
+                    setSelectedTask(null);
                 }}
                 onConfirm={async () => {
-                    await handleDeleteTask(); // ลบ Task
+                    await handleDeleteTask();
                 }}
                 taskTitle={selectedTask?.title || ""}
                 taskStatus={selectedTask?.status || ""}
                 setShowDetailSidebar={(show) => {
-                    if (show) setSelectedTask(selectedTask); // เปิด TaskDetailSidebar
+                    if (show) setSelectedTask(selectedTask);
                 }}
             />
         </div>

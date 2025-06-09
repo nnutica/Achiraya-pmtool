@@ -1,0 +1,286 @@
+import { fetchProjectById } from "@/libs/projectService";
+import { Project, Member } from "@/types/project";
+import React, { useEffect, useState } from "react";
+import MemberSidebar from "@/app/Components/Project-Components/MemberSidebar";
+
+interface ProjectDetailSidebarProps {
+    isOpen: boolean;
+    onClose: () => void;
+    project: Project;
+    onEdit: (updatedProject: Project) => void;
+}
+
+export default function ProjectDetailSidebar({ isOpen, onClose, project, onEdit }: ProjectDetailSidebarProps) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedName, setEditedName] = useState(project?.name || "");
+    const [editedDescription, setEditedDescription] = useState(project?.description || "");
+    const [editedMembers, setEditedMembers] = useState<Member[]>(project?.members || []);
+    const [newMemberName, setNewMemberName] = useState("");
+    const [newMemberEmail, setNewMemberEmail] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+    const [showMemberSidebar, setShowMemberSidebar] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
+
+    // ใช้ useEffect เพื่ออัปเดตค่าเมื่อ project เปลี่ยนแปลง
+    useEffect(() => {
+        if (project) {
+            setEditedName(project.name || "");
+            setEditedDescription(project.description || "");
+            setEditedMembers(project.members || []);
+        }
+    }, [project]);
+
+    const handleAddMember = () => {
+        if (!newMemberName.trim()) return;
+
+        const newMember: Member = {
+            id: crypto.randomUUID(),
+            name: newMemberName,
+            email: newMemberEmail || null,
+            role: "Member",
+            joinedAt: new Date().toISOString(),
+        };
+
+        setEditedMembers((prev) => [...prev, newMember]);
+        setNewMemberName("");
+        setNewMemberEmail("");
+    };
+
+    const handleEditMember = (memberId: string, updatedName: string, updatedEmail: string, updatedRole: "Admin" | "Member" | "StackHolder") => {
+        if (!updatedName.trim() || !updatedRole.trim()) {
+            alert("Name and Role are required.");
+            return;
+        }
+
+        setEditedMembers((prev) =>
+            prev.map((member) =>
+                member.id === memberId
+                    ? { ...member, name: updatedName, email: updatedEmail || null, role: updatedRole }
+                    : member
+            )
+        );
+    };
+
+    const handleDeleteMember = (member: Member) => {
+        setMemberToDelete(member);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDeleteMember = () => {
+        if (memberToDelete) {
+            setEditedMembers((prev) => prev.filter((m) => m.id !== memberToDelete.id));
+            setShowDeleteModal(false);
+            setMemberToDelete(null);
+        }
+    };
+
+    const handleSaveChanges = async () => {
+        const updatedProject: Project = {
+            ...project,
+            name: editedName,
+            description: editedDescription,
+            members: editedMembers,
+        };
+
+        // อัปเดต State ทันที
+
+
+        try {
+            await onEdit(updatedProject); // อัปเดตข้อมูลในฐานข้อมูล
+            setShowSuccessModal(true); // แสดง modal แจ้งเตือนความสำเร็จ
+        } catch (error) {
+            console.error("Error saving changes:", error);
+            alert("Failed to save changes. Please try again.");
+        }
+
+        setIsEditing(false); // ปิดโหมดแก้ไข
+    };
+
+    const handleEditMemberSidebar = (member: Member) => {
+        setSelectedMember(member);
+        setShowMemberSidebar(true);
+    };
+
+    const handleSaveMember = (updatedMember: Member) => {
+        setEditedMembers((prev) =>
+            prev.map((member) =>
+                member.id === updatedMember.id ? updatedMember : member
+            )
+        );
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-40 flex justify-end">
+            {/* Overlay */}
+            <div className="absolute inset-0 bg-black/20  transition-opacity" onClick={onClose}></div>
+
+
+            {/* Sidebar */}
+            <div className="bg-white rounded-l-lg shadow-lg p-6 w-full max-w-md h-full mt-16 z-50">
+                {isEditing ? (
+                    <>
+                        <h2 className="text-xl font-bold mb-4">Edit Project</h2>
+                        <input
+                            type="text"
+                            value={editedName}
+                            onChange={(e) => setEditedName(e.target.value)}
+                            placeholder="Project Name"
+                            className="w-full border rounded-lg px-3 py-2 mb-4"
+                        />
+                        <textarea
+                            value={editedDescription}
+                            onChange={(e) => setEditedDescription(e.target.value)}
+                            placeholder="Project Description"
+                            className="w-full border rounded-lg px-3 py-2 mb-4"
+                        />
+                        <h3 className="text-lg font-semibold mb-2">Members</h3>
+                        <ul className="mb-4">
+                            {editedMembers.map((member) => (
+                                <li key={member.id} className="text-gray-700 flex justify-between items-center">
+                                    <div>
+                                        <p>
+                                            {member.name} ({member.email || "No email"}) - Role: {member.role}
+                                        </p>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => handleEditMemberSidebar(member)}
+                                            className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded-lg"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteMember(member)}
+                                            className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-lg"
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                        <input
+                            type="text"
+                            value={newMemberName}
+                            onChange={(e) => setNewMemberName(e.target.value)}
+                            placeholder="Member Name"
+                            className="w-full border rounded-lg px-3 py-2 mb-2"
+                        />
+                        <input
+                            type="email"
+                            value={newMemberEmail}
+                            onChange={(e) => setNewMemberEmail(e.target.value)}
+                            placeholder="Member Email (optional)"
+                            className="w-full border rounded-lg px-3 py-2 mb-4"
+                        />
+                        <button
+                            onClick={handleAddMember}
+                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg mb-4"
+                        >
+                            Add Member
+                        </button>
+                        <button
+                            onClick={handleSaveChanges}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                        >
+                            {isLoading ? "Saving..." : "Save Changes"}
+                        </button>
+                        <button
+                            onClick={() => setIsEditing(false)}
+                            className="ml-4 bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg"
+                        >
+                            Cancel
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        <h2 className="text-xl font-bold mb-4">{project.name}</h2>
+                        <div className="text-gray-700 mb-4">
+                            {project.description.split("\n").map((line, index) => (
+                                <p key={index}>{line}</p>
+                            ))}
+                        </div>
+                        <h3 className="text-lg font-semibold mb-2">Members</h3>
+                        <ul className="mb-4 mt-2">
+                            {project.members?.map((member) => (
+                                <li key={member.id} className="text-gray-700">
+                                    {member.name} ({member.email || "No email"})-Role: {member.role}
+                                </li>
+                            ))}
+                        </ul>
+                        <button
+                            onClick={() => setIsEditing(true)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                        >
+                            Edit Project
+                        </button>
+                        <button
+                            onClick={onClose}
+                            className="ml-4 bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg"
+                        >
+                            Close
+                        </button>
+                    </>
+                )}
+            </div>
+
+            {showSuccessModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="bg-white rounded-lg p-6 shadow-lg">
+                        <h2 className="text-xl font-bold mb-4">Success</h2>
+                        <p className="text-gray-700 mb-4">Project has been updated successfully.</p>
+                        <button
+                            onClick={() => {
+                                setShowSuccessModal(false);
+                                onClose(); // ปิด Sidebar
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            <MemberSidebar
+                isOpen={showMemberSidebar}
+                onClose={() => setShowMemberSidebar(false)}
+                member={selectedMember}
+                onSave={handleSaveMember}
+            />
+
+            {showDeleteModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="bg-white rounded-lg p-6 shadow-lg">
+                        <h2 className="text-xl font-bold mb-4">Confirm Delete</h2>
+                        <p className="text-gray-700 mb-4">
+                            Are you sure you want to delete {memberToDelete?.name} ({memberToDelete?.email || "No email"})?
+                        </p>
+                        <div className="flex gap-4">
+                            <button
+                                onClick={confirmDeleteMember}
+                                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
+                            >
+                                Delete
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowDeleteModal(false);
+                                    setMemberToDelete(null);
+                                }}
+                                className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}

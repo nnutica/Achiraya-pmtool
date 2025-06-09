@@ -1,19 +1,42 @@
+import { Member } from "@/types/project";
 import React, { useState } from "react";
 
 interface AddProjectModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onCreate: (name: string, description: string) => void;
+    onCreate: (name: string, description: string, members: Member[]) => void;
 }
 
 export default function AddProjectModal({ isOpen, onClose, onCreate }: AddProjectModalProps) {
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
+    const [members, setMembers] = useState<Member[]>([]);
+    const [newMemberName, setNewMemberName] = useState("");
+    const [newMemberEmail, setNewMemberEmail] = useState("");
+    const [newMemberRole, setNewMemberRole] = useState<"Admin" | "Member" | "StackHolder">("Member"); // ค่าเริ่มต้นเป็น Member
+
+    const handleAddMember = () => {
+        if (!newMemberName.trim()) return;
+
+        const newMember: Member = {
+            id: crypto.randomUUID(),
+            name: newMemberName,
+            email: newMemberEmail || null,
+            joinedAt: new Date().toISOString(),
+            role: newMemberRole, // เพิ่ม Role
+        };
+
+        setMembers((prev) => [...prev, newMember]);
+        setNewMemberName("");
+        setNewMemberEmail("");
+        setNewMemberRole("Member"); // รีเซ็ต Role เป็นค่าเริ่มต้น
+    };
 
     const handleSubmit = () => {
-        onCreate(name, description); // ส่งข้อมูล Description พร้อม line breaks
+        onCreate(name, description, members); // ส่งข้อมูล members ไปด้วย
         setName("");
         setDescription("");
+        setMembers([]);
         onClose();
     };
 
@@ -21,16 +44,8 @@ export default function AddProjectModal({ isOpen, onClose, onCreate }: AddProjec
 
     return (
         <div className="fixed inset-0 z-40 flex justify-end">
-            {/* Overlay */}
-            <div
-                className="fixed inset-0  z-30"
-                onClick={onClose}
-            ></div>
-
-            {/* Modal */}
-            <div
-                className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mt-16  z-40 relative"
-            >
+            <div className="absolute inset-0 bg-black/20  transition-opacity" onClick={onClose}></div>
+            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mt-16 z-50">
                 <h2 className="text-xl font-bold mb-4">Add Project</h2>
                 <input
                     type="text"
@@ -45,12 +60,48 @@ export default function AddProjectModal({ isOpen, onClose, onCreate }: AddProjec
                     onChange={(e) => setDescription(e.target.value)}
                     className="w-full border rounded-lg px-3 py-2 mb-4"
                 />
-
+                <h3 className="text-lg font-semibold mb-2">Add Members</h3>
+                <input
+                    type="text"
+                    placeholder="Member Name"
+                    value={newMemberName}
+                    onChange={(e) => setNewMemberName(e.target.value)}
+                    className="w-full border rounded-lg px-3 py-2 mb-2"
+                />
+                <input
+                    type="email"
+                    placeholder="Member Email (optional)"
+                    value={newMemberEmail}
+                    onChange={(e) => setNewMemberEmail(e.target.value)}
+                    className="w-full border rounded-lg px-3 py-2 mb-4"
+                />
+                <select
+                    value={newMemberRole}
+                    onChange={(e) => setNewMemberRole(e.target.value as "Admin" | "Member" | "StackHolder")}
+                    className="w-full border rounded-lg px-3 py-2 mb-4"
+                >
+                    <option value="Member">Member</option>
+                    <option value="Admin">Admin</option>
+                    <option value="StackHolder">stackHolder</option>
+                </select>
+                <button
+                    onClick={handleAddMember}
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg mb-4"
+                >
+                    Add Member
+                </button>
+                <ul className="mb-4">
+                    {members.map((member) => (
+                        <li key={member.id} className="text-gray-700">
+                            {member.name} ({member.email || "No email"}) - Role: {member.role}
+                        </li>
+                    ))}
+                </ul>
                 <button
                     onClick={handleSubmit}
                     className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
                 >
-                    Create
+                    Create Project
                 </button>
                 <button
                     onClick={onClose}

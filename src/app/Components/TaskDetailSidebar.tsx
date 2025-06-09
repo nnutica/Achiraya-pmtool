@@ -1,19 +1,28 @@
 import { Task, TaskPriority, Taskstatus } from "@/types/task";
 import { useEffect, useRef, useState } from "react";
 import Badge from "./Badge";
-import { updateTask, addComment, fetchTaskById } from "@/libs/taskservice"; // นำเข้า fetchTaskById
-import { useAuth } from "./AuthProvider"; // Import useAuth สำหรับ currentUser
+import { updateTask, addComment, fetchTaskById, updateTaskStatus } from "@/libs/taskservice";
+import { useAuth } from "./AuthProvider";
+import CommentBox from "@/app/Components/CommentBox";
+import { Member, Project } from "@/types/project";
 
 interface TaskDetailSidebarProps {
     isOpen: boolean;
     onClose: () => void;
     task: Task | null;
-    onTaskUpdate?: (updatedTask: Task) => void; // callback เพื่ออัปเดตรายการงานในหน้าหลัก
+    project: Project;
+    onTaskUpdate?: (updatedTask: Task) => void;
 }
 
-export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate }: TaskDetailSidebarProps) {
+export default function TaskDetailSidebar({
+    isOpen,
+    onClose,
+    task,
+    project,
+    onTaskUpdate,
+}: TaskDetailSidebarProps) {
     const sidebarRef = useRef<HTMLDivElement>(null);
-    const { currentUser } = useAuth(); // ดึง currentUser จาก AuthProvider
+    const { currentUser } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
     const [editedDescription, setEditedDescription] = useState("");
     const [editedPriority, setEditedPriority] = useState("");
@@ -22,24 +31,16 @@ export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate 
     const [newComment, setNewComment] = useState("");
     const [newAuthor, setNewAuthor] = useState(currentUser?.displayName || "");
 
-
-    // เมื่อ task เปลี่ยน ให้อัปเดต state สำหรับการแก้ไข
     useEffect(() => {
         if (task) {
-            // รีเซ็ตโหมด Edit เมื่อ Task เปลี่ยน
             setIsEditing(false);
-
-            // อัปเดตค่าเริ่มต้นสำหรับการแก้ไข
             setEditedDescription(task.description);
             setEditedPriority(task.priority);
             setEditedStatus(task.status);
-            setEditedDueDate(task.dueDate?.split("T")[0] || ""); // แปลงรูปแบบวันที่ให้ตรงกับ input type="date"
-            console.log("Task updated in sidebar:", task.status);
+            setEditedDueDate(task.dueDate?.split("T")[0] || "");
         }
     }, [task]);
 
-
-    // handle click outside
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
@@ -55,23 +56,18 @@ export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate 
         };
     }, [isOpen, onClose]);
 
+    if (!isOpen || !task) return null;
 
-    if (!isOpen || !task) return null; // ตรวจสอบว่า task ไม่เป็น null ก่อนแสดง Sidebar
-
-    // ฟังก์ชันเปิด/ปิดโหมดการแก้ไข
     const toggleEditMode = () => {
         setIsEditing(!isEditing);
-
-        // ถ้ากำลังจะเปิดโหมดแก้ไข ให้ reset ค่าเริ่มต้น
         if (!isEditing) {
             setEditedDescription(task.description);
             setEditedPriority(task.priority);
             setEditedStatus(task.status);
-            setEditedDueDate(task.dueDate?.split("T")[0] || ""); // แปลงรูปแบบวันที่ให้ตรงกับ input type="date"
+            setEditedDueDate(task.dueDate?.split("T")[0] || "");
         }
     };
 
-    // ฟังก์ชันบันทึกการแก้ไข
     const handleSaveChanges = async () => {
         if (!task) return;
 
@@ -80,7 +76,7 @@ export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate 
                 description: editedDescription,
                 priority: editedPriority as TaskPriority,
                 status: editedStatus as Taskstatus,
-                dueDate: editedDueDate || null, // เพิ่ม DueDate
+                dueDate: editedDueDate || null,
             });
 
             if (onTaskUpdate) {
@@ -89,7 +85,7 @@ export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate 
                     description: editedDescription,
                     priority: editedPriority as TaskPriority,
                     status: editedStatus as Taskstatus,
-                    dueDate: editedDueDate || null, // อัปเดต DueDate
+                    dueDate: editedDueDate || null,
                     updatedAt: new Date().toISOString(),
                 });
             }
@@ -101,236 +97,215 @@ export default function TaskDetailSidebar({ isOpen, onClose, task, onTaskUpdate 
         }
     };
 
-    const handleAddComment = async () => {
-        if (!task) {
-            console.error("Task is null. Cannot add comment.");
-            return;
-        }
-
-        if (!newComment.trim()) return;
+    const handleAddComment = async (author: string, message: string) => {
+        if (!task) return;
 
         const comment = {
             id: crypto.randomUUID(),
-            author: newAuthor || currentUser?.displayName || "Anonymous",
-            message: newComment,
+            author,
+            message,
             createdAt: new Date().toISOString(),
         };
 
         try {
-            await addComment(task.id, comment); // เพิ่ม Comment ลงใน Task
+            await addComment(task.id, comment);
 
-            // Fetch Task ใหม่หลังจากเพิ่ม Comment
             if (onTaskUpdate) {
-                const updatedTask = await fetchTaskById(task.id); // ดึง Task ใหม่จาก API
+                const updatedTask = await fetchTaskById(task.id);
                 if (updatedTask) {
-                    onTaskUpdate(updatedTask); // อัปเดต Task ในหน้าหลัก
+                    onTaskUpdate(updatedTask);
                 }
             }
-
-            // รีเซ็ตฟอร์ม
-            setNewComment("");
-            setNewAuthor("");
         } catch (error) {
             console.error("Error adding comment:", error);
             alert("Failed to add comment. Please try again.");
         }
     };
 
+    const handleStatusChange = async (newStatus: string) => {
+        if (!task) return;
+
+        try {
+            await updateTaskStatus(task.id, newStatus);
+            if (onTaskUpdate) {
+                onTaskUpdate({ ...task, status: newStatus as Taskstatus });
+            }
+        } catch (error) {
+            console.error("Error updating task status:", error);
+            alert("Failed to update task status. Please try again.");
+        }
+    };
+
     return (
         <div className="fixed inset-0 z-40 flex justify-end">
-            {/* Overlay ที่ใสไม่มีสี */}
-            <div
-                className="fixed inset-0 bg-transparent"
-                onClick={onClose}
-            ></div>
-
+            <div className="absolute inset-0 bg-black/20  transition-opacity"></div>
             <div
                 ref={sidebarRef}
-                className="bg-white w-full sm:w-[400px] rounded-l-3xl h-[calc(100%-4rem)] mt-16 overflow-y-auto p-6 shadow-lg relative"
+                className="bg-blue-950 w-8/12 sm:w-8/12 rounded-l-3xl h-[calc(100%-4rem)] mt-16 overflow-y-auto p-6 shadow-lg relative"
             >
-                {/* ส่วนหัว */}
-                <div className="flex justify-between items-center mb-6 sticky top-0 bg-white pt-2 z-10">
-                    <h2 className="text-2xl font-bold">
-                        {isEditing ? task.title : "Task Details"}
-                    </h2>
-                    <button
-                        onClick={onClose}
-                        className="text-gray-500 hover:text-gray-700"
-                    >
-                        ✕
-                    </button>
-                </div>
-
-                {/* ชื่องาน - แสดงเฉพาะเมื่อไม่ได้อยู่ในโหมดแก้ไข */}
-                {!isEditing && (
-                    <div className="mb-6">
-                        <h1 className="text-2xl font-bold">{task.title}</h1>
-
+                <div className="sticky top-0 bg-blue-950 pt-2 z-10 shadow mb-6">
+                    <div className="flex justify-between items-center">
+                        <h2 className="text-2xl font-bold">
+                            {isEditing ? task.title : "Task Details"}
+                        </h2>
+                        <button
+                            onClick={onClose}
+                            className="text-gray-500 hover:text-gray-700"
+                        >
+                            ✕
+                        </button>
                     </div>
-                )}
 
-                {/* แท็กสถานะและความสำคัญ */}
-                <div className="flex gap-2 mb-6">
-                    {!isEditing ? (
-                        <>
-                            <Badge type="status" value={task.status} />
-                            <Badge type="priority" value={task.priority} />
-                        </>
-                    ) : null}
-                </div>
-
-                {/* รายละเอียด */}
-                <div className="mb-6">
-                    <h3 className="text-lg font-semibold mb-2">Description</h3>
-                    {!isEditing ? (
-                        <>
-                            <p className="text-gray-700 whitespace-pre-wrap">
-                                {task.description || "No description available"}
-                            </p>
-                            <p className="text-sm text-gray-500 mt-2">
-                                Due Date: {task.dueDate ? formatDate(task.dueDate) : "Not specified"}
-                            </p>
-                        </>
-                    ) : (
-                        <textarea
-                            value={editedDescription}
-                            onChange={(e) => setEditedDescription(e.target.value)}
-                            className="w-full border rounded-lg px-3 py-2 min-h-[120px]"
-                            placeholder="Enter task description"
-                        />
+                    {!isEditing && (
+                        <div className="mt-2 mb-4">
+                            <h1 className="text-xl font-bold">{task.title}</h1>
+                        </div>
                     )}
-                </div>
 
-                {/* Priority, Status และ DueDate (แสดงเฉพาะเมื่อ edit) */}
-                {isEditing && (
-                    <div className="space-y-4 mb-6">
-                        <div>
-                            <label className="block text-lg font-semibold mb-2">Priority</label>
-                            <select
-                                value={editedPriority}
-                                onChange={(e) => setEditedPriority(e.target.value)}
-                                className="w-full border rounded-lg px-3 py-2"
-                            >
-                                <option value="Low">Low</option>
-                                <option value="Medium">Medium</option>
-                                <option value="High">High</option>
-                                <option value="Urgent">Urgent</option>
-                            </select>
-                        </div>
+                    <div className="flex gap-2 mt-2 mb-4">
+                        <Badge type="status" value={task.status} />
+                        <Badge type="priority" value={task.priority} />
+                    </div>
 
-                        <div>
-                            <label className="block text-lg font-semibold mb-2">Status</label>
-                            <select
-                                value={editedStatus}
-                                onChange={(e) => setEditedStatus(e.target.value)}
-                                className="w-full border rounded-lg px-3 py-2"
-                            >
-                                <option value="Unread">Unread</option>
-                                <option value="in-progress">In Progress</option>
-                                <option value="Wait Approve">Wait Approve</option>
-                                <option value="done">Done</option>
-                                <option value="rejected">Rejected</option>
-                                <option value="cancelled">Cancelled</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="block text-lg font-semibold mb-2">Due Date</label>
-                            <input
-                                type="date"
-                                value={editedDueDate}
-                                onChange={(e) => setEditedDueDate(e.target.value)}
-                                className="w-full border rounded-lg px-3 py-2"
+                    <div className="mb-6">
+                        <h3 className="text-lg font-semibold mb-2">Description</h3>
+                        {!isEditing ? (
+                            <>
+                                <p className="text-shadow-blue-300 whitespace-pre-wrap">
+                                    {task.description || "No description available"}
+                                </p>
+                                <p className="text-sm text-gray-500 mt-2">
+                                    Due Date: {task.dueDate ? formatDate(task.dueDate) : "Not specified"}
+                                </p>
+                            </>
+                        ) : (
+                            <textarea
+                                value={editedDescription}
+                                onChange={(e) => setEditedDescription(e.target.value)}
+                                className="w-full border rounded-lg px-3 py-2 min-h-[120px]"
+                                placeholder="Enter task description"
                             />
-                        </div>
+                        )}
                     </div>
-                )}
 
-                {/* วันที่สร้างและอัปเดต */}
-                <div className="mb-6 text-sm text-gray-500">
-                    <p>Created: {formatDate(task.createdAt)}</p>
-                    {task.updatedAt && <p>Updated: {formatDate(task.updatedAt)}</p>}
-                </div>
+                    {isEditing && (
+                        <div className="space-y-6 mb-6">
+                            {/* Priority */}
+                            <div className="border rounded-lg p-4">
+                                <h3 className="text-lg font-semibold mb-2">Priority</h3>
+                                <select
+                                    value={editedPriority}
+                                    onChange={(e) => setEditedPriority(e.target.value)}
+                                    className="w-full border rounded-lg px-3 py-2"
+                                >
+                                    <option value="Low" className="text-black">Low</option>
+                                    <option value="Medium" className="text-black">Medium</option>
+                                    <option value="High" className="text-black">High</option>
+                                    <option value="Urgent" className="text-black">Urgent</option>
+                                </select>
+                            </div>
 
-                {/* ความคิดเห็น */}
-                <div className="mb-6">
-                    <h3 className="text-lg font-semibold mb-2">Comments ({task.comments?.length || 0})</h3>
+                            {/* Status */}
+                            <div className="border rounded-lg p-4">
+                                <h3 className="text-lg font-semibold mb-2">Status</h3>
+                                <select
+                                    value={editedStatus}
+                                    onChange={(e) => setEditedStatus(e.target.value)}
+                                    className="w-full  text-white border border-gray-600 rounded-lg px-3 py-2 appearance-none"
+                                >
+                                    <option value="Unread" className="text-black">Unread</option>
+                                    <option value="in-progress" className="text-black">In Progress</option>
+                                    <option value="Wait Approve" className="text-black">Wait Approve</option>
+                                    <option value="done" className="text-black">Done</option>
+                                    <option value="rejected" className="text-black">Rejected</option>
+                                    <option value="cancelled" className="text-black">Cancelled</option>
+                                </select>
+                            </div>
 
-                    {task.comments && task.comments.length > 0 ? (
-                        <div className="space-y-3">
-                            {task.comments.map((comment, index) => (
-                                <div key={index} className="border-l-4 border-gray-200 pl-3 py-1">
-                                    <p className="text-gray-700">{comment.message}</p>
-                                    <p className="text-xs text-gray-500">
-                                        By: {comment.author} • {formatDate(comment.createdAt)}
-                                    </p>
-                                </div>
-                            ))}
+                            {/* Due Date */}
+                            <div className="border rounded-lg p-4">
+                                <h3 className="text-lg font-semibold mb-2">Due Date</h3>
+                                <input
+                                    type="date"
+                                    value={editedDueDate}
+                                    onChange={(e) => setEditedDueDate(e.target.value)}
+                                    className="w-full border rounded-lg px-3 py-2"
+                                />
+                            </div>
                         </div>
-                    ) : (
-                        <p className="text-gray-500">No comments yet</p>
                     )}
-                </div>
 
-                {/* ฟอร์มเพิ่ม Comment */}
-                {!isEditing && (
+                    <div className="mb-6 text-sm text-gray-500">
+                        <p>Created: {formatDate(task.createdAt)}</p>
+                        {task.updatedAt && <p>Updated: {formatDate(task.updatedAt)}</p>}
+                    </div>
+
                     <div className="mb-6">
-                        <h3 className="text-lg font-semibold mb-2">Add Comment</h3>
-                        <input
-                            type="text"
-                            value={newAuthor}
-                            onChange={(e) => setNewAuthor(e.target.value)}
-                            placeholder="Enter your name"
-                            className="border rounded-lg px-3 py-2 mb-2 w-full"
-                        />
-                        <textarea
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
-                            placeholder="Write your comment"
-                            className="border rounded-lg px-3 py-2 min-h-[100px] w-full"
-                        />
+                        <h3 className="text-lg font-semibold mb-2">
+                            Comments ({task.comments?.length || 0})
+                        </h3>
+                        {task.comments && task.comments.length > 0 ? (
+                            <div className="space-y-3">
+                                {task.comments.map((comment, index) => (
+                                    <div key={index} className="border-l-4 border-gray-200 pl-3 py-1">
+                                        <p className="text-shadow-blue-500">
+                                            {comment.message.split("\n").map((line, index) => (
+                                                <p key={index}>{line}</p>
+                                            ))}
 
+                                        </p>
+                                        <p className="text-xs text-gray-200">
+                                            By: {comment.author} • {formatDate(comment.createdAt)}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-gray-500">No comments yet</p>
+                        )}
                     </div>
-                )}
 
-                {/* ปุ่มดำเนินการ */}
-                <div className="flex gap-3 mt-6">
-                    {!isEditing ? (
-                        <>
-                            <button
-                                onClick={toggleEditMode}
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex-1"
-                            >
-                                Edit
-                            </button>
-                            <button
-                                onClick={handleAddComment}
-                                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 mt-2"
-                            >
-                                Submit Comment
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <button
-                                onClick={handleSaveChanges}
-                                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex-1"
-                            >
-                                Save Changes
-                            </button>
-                            <button
-                                onClick={toggleEditMode}
-                                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex-1"
-                            >
-                                Cancel
-                            </button>
-                        </>
-                    )}
+                    <div className="space-y-4">
+                        {!isEditing && (
+                            <CommentBox
+                                onSubmit={handleAddComment}
+                                currentUserName={currentUser?.displayName || undefined} // เปลี่ยน null เป็น undefined
+                                members={project.members?.map((member: Member) => member.name) || []}
+                            />
+                        )}
+
+                        <div className="flex gap-3">
+                            {!isEditing ? (
+                                <button
+                                    onClick={toggleEditMode}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex-1"
+                                >
+                                    Edit
+                                </button>
+                            ) : (
+                                <>
+                                    <button
+                                        onClick={handleSaveChanges}
+                                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex-1"
+                                    >
+                                        Save Changes
+                                    </button>
+                                    <button
+                                        onClick={toggleEditMode}
+                                        className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex-1"
+                                    >
+                                        Cancel
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     );
 }
+
 
 // ฟังก์ชั่นช่วยสำหรับแสดงวันที่ในรูปแบบที่อ่านง่าย
 function formatDate(dateInput?: any) {

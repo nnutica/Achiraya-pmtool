@@ -1,10 +1,12 @@
+import { Member } from "@/types/project";
 import { db } from "./firebase";
-import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, where, orderBy, getDoc } from "firebase/firestore";
+import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, where, orderBy, getDoc, setDoc } from "firebase/firestore";
 
 export interface Project {
     id: string;
     name: string;
     description: string;
+    members?: Member[];
     createdAt: string;
     updatedAt: string;
     userId: string;
@@ -25,23 +27,19 @@ export const fetchProjects = async (userId: string): Promise<Project[]> => {
     })) as Project[];
 };
 
-export const createProject = async (project: Omit<Project, "id" | "createdAt" | "updatedAt">) => {
-    const now = new Date().toISOString();
-    const projectWithMeta = {
-        ...project,
-        createdAt: now,
-        updatedAt: now,
-    };
-    const docRef = await addDoc(collection(db, "projects"), projectWithMeta);
-    return docRef;
+export const createProject = async (project: Project) => {
+    const projectRef = doc(collection(db, "projects"), project.id); // ใช้ project.id เป็น Document ID
+    await setDoc(projectRef, project); // บันทึกเอกสารลงใน Firestore
 };
 
-export const updateProject = async (id: string, updates: Partial<Project>) => {
-    const updatesWithMeta = {
-        ...updates,
+export const updateProject = async (project: Project) => {
+    const projectRef = doc(db, "projects", project.id);
+    await updateDoc(projectRef, {
+        name: project.name,
+        description: project.description,
+        members: project.members,
         updatedAt: new Date().toISOString(),
-    };
-    return await updateDoc(doc(db, "projects", id), updatesWithMeta);
+    });
 };
 
 export const deleteProject = async (id: string) => {
@@ -49,16 +47,61 @@ export const deleteProject = async (id: string) => {
 };
 
 export const fetchProjectById = async (projectId: string): Promise<Project | null> => {
-    const docRef = doc(db, "projects", projectId); // อ้างอิงถึงเอกสารใน Firestore
-    const docSnap = await getDoc(docRef); // ดึงข้อมูลเอกสาร
+    const projectRef = doc(db, "projects", projectId);
+    const projectSnap = await getDoc(projectRef);
 
-    if (docSnap.exists()) {
-        return {
-            id: docSnap.id,
-            ...docSnap.data(),
-        } as Project; // แปลงข้อมูลเป็น Project
-    } else {
-        console.error(`Project with ID ${projectId} not found.`);
-        return null; // คืนค่า null หากไม่มีเอกสาร
+    if (!projectSnap.exists()) {
+        return null; // หากไม่มีโปรเจค ให้คืนค่า null
     }
+
+    return { id: projectSnap.id, ...projectSnap.data() } as Project;
 };
+
+export const addMemberToProject = async (projectId: string, member: Omit<Member, "joinedAt">) => {
+    const now = new Date().toISOString();
+    const memberWithMeta = {
+        ...member,
+        joinedAt: now,
+    };
+
+    const projectRef = doc(db, "projects", projectId);
+    const projectSnap = await getDoc(projectRef);
+
+    if (!projectSnap.exists()) {
+        throw new Error(`Project with ID ${projectId} not found.`);
+    }
+
+    const existingMembers = projectSnap.data().members || [];
+    const updatedMembers = [...existingMembers, memberWithMeta];
+
+    await updateDoc(projectRef, { members: updatedMembers });
+    return memberWithMeta;
+};
+
+export const removeMemberFromProject = async (projectId: string, memberId: string) => {
+    const projectRef = doc(db, "projects", projectId);
+    const projectSnap = await getDoc(projectRef);
+
+    if (!projectSnap.exists()) {
+        throw new Error(`Project with ID ${projectId} not found.`);
+    }
+
+    const existingMembers = projectSnap.data().members || [];
+    const updatedMembers = existingMembers.filter((member: Member) => member.id !== memberId);
+
+    await updateDoc(projectRef, { members: updatedMembers });
+};
+
+export const fetchMembersByProjectId = async (projectId: string): Promise<Member[]> => {
+    const projectRef = doc(db, "projects", projectId);
+    const projectSnap = await getDoc(projectRef);
+
+    if (!projectSnap.exists()) {
+        throw new Error(`Project with ID ${projectId} not found.`);
+    }
+
+    const members = projectSnap.data().members || [];
+    return members as Member[];
+}
+
+export type { Member };

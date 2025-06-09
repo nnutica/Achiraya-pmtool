@@ -43,6 +43,7 @@ export default function AddTaskSidebar({ isOpen, onClose, projectId, onTaskAdded
 
     return (
         <div className="fixed inset-0 z-40 flex justify-end">
+            <div className="absolute inset-0 bg-black/20  transition-opacity"></div>
             {/* Background overlay with fade-in */}
             <div
                 className="fixed inset-0 transition-opacity duration-300 ease-in-out"
@@ -52,7 +53,7 @@ export default function AddTaskSidebar({ isOpen, onClose, projectId, onTaskAdded
 
             {/* Sidebar with slide-in */}
             <div
-                className="w-full sm:w-[400px] bg-white shadow-lg rounded-l-3xl flex flex-col h-[calc(100%-4rem)] mt-16 relative transition-transform duration-300 ease-in-out"
+                className="w-full sm:w-[400px] bg-blue-900 shadow-lg rounded-l-3xl flex flex-col h-[calc(100%-4rem)] mt-16 relative transition-transform duration-300 ease-in-out"
                 style={{ transform: isOpen ? 'translateX(0)' : 'translateX(100%)' }}
             >
                 {/* Header - fixed at top */}

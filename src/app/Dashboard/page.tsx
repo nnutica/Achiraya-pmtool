@@ -2,14 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { fetchProjects, createProject, Project } from "@/libs/projectService";
+import { fetchProjects, createProject, updateProject, Project, Member } from "@/libs/projectService";
 import ProjectCard from "@/app/Components/Project-Components/ProjectCard";
 import AddProjectModal from "@/app/Components/Project-Components/AddProjectModal";
+import ProjectDetailSidebar from "@/app/Components/Project-Components/ProjectDetailSidebar";
 import { useAuth } from "../Components/AuthProvider";
 
 export default function Dashboard() {
     const [projects, setProjects] = useState<Project[]>([]);
     const [showModal, setShowModal] = useState(false);
+    const [showSidebar, setShowSidebar] = useState(false);
+    const [selectedProject, setSelectedProject] = useState<Project | null>(null);
     const router = useRouter();
     const { currentUser } = useAuth(); // ดึงข้อมูล CurrentUser
 
@@ -18,26 +21,68 @@ export default function Dashboard() {
 
         const loadProjects = async () => {
             const data = await fetchProjects(currentUser.uid); // ดึง Project เฉพาะของ User
-            setProjects(data);
+            setProjects(data); // ตรวจสอบว่า data มี members และ tasks
         };
         loadProjects();
     }, [currentUser]);
 
-    const handleCreateProject = async (name: string, description: string) => {
-        if (!currentUser) return;
+    const handleCreateProject = async (name: string, description: string, members: Member[]) => {
+        if (!currentUser) {
+            alert("User not logged in.");
+            return;
+        }
 
-        await createProject({ name, description, userId: currentUser.uid }); // เพิ่ม userId ใน Project
-        const updatedProjects = await fetchProjects(currentUser.uid);
-        setProjects(updatedProjects);
+        const newProject: Project = {
+            id: crypto.randomUUID(),
+            name,
+            description,
+            members,
+            userId: currentUser.uid,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        };
+
+        try {
+            await createProject(newProject); // บันทึกโปรเจคลงในฐานข้อมูล
+            setProjects((prev) => [...prev, newProject]); // อัปเดต State projects
+        } catch (error) {
+            console.error("Error creating project:", error);
+            alert("Failed to create project. Please try again.");
+        }
     };
 
     const handleProjectClick = (projectId: string) => {
         router.push(`/project/${projectId}`); // Redirect ไปหน้า ProjectDetail
     };
 
+    const handleDetail = (project: Project) => {
+        setSelectedProject(project);
+        setShowSidebar(true);
+    };
+
+    const handleEditProject = async (updatedProject: Project) => {
+        try {
+            await updateProject(updatedProject); // บันทึกข้อมูลลงในฐานข้อมูล
+            setProjects((prevProjects) =>
+                prevProjects.map((project) =>
+                    project.id === updatedProject.id ? updatedProject : project
+                )
+            ); // อัปเดต State projects
+        } catch (error) {
+            console.error("Error updating project:", error);
+            alert("Failed to update project. Please try again.");
+        }
+    };
+
+    useEffect(() => {
+        console.log(projects); // ตรวจสอบว่า State projects ถูกอัปเดต
+    }, [projects]);
+
     return (
         <div className="container mx-auto px-4 py-8">
-            <h1 className="text-2xl font-bold mb-6">Project Dashboard</h1>
+            <h1 className="text-2xl font-bold mb-6 text-white">
+                Your {currentUser ? currentUser.displayName : ""} Project Dashboard
+            </h1>
             <button
                 onClick={() => setShowModal(true)}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mb-6"
@@ -48,8 +93,14 @@ export default function Dashboard() {
                 {projects.map((project) => (
                     <ProjectCard
                         key={project.id}
-                        project={project}
-                        onClick={() => handleProjectClick(project.id)} // Redirect ไปหน้า ProjectDetail
+                        project={{
+                            id: project.id,
+                            name: project.name,
+                            description: project.description,
+                            members: project.members || [], // ค่าเริ่มต้นเป็น []
+                        }}
+                        onClick={() => handleProjectClick(project.id)}
+                        onDetail={() => handleDetail(project)}
                     />
                 ))}
             </div>
@@ -57,6 +108,12 @@ export default function Dashboard() {
                 isOpen={showModal}
                 onClose={() => setShowModal(false)}
                 onCreate={handleCreateProject}
+            />
+            <ProjectDetailSidebar
+                isOpen={showSidebar}
+                onClose={() => setShowSidebar(false)}
+                project={selectedProject!}
+                onEdit={handleEditProject} // ส่งฟังก์ชันแก้ไข
             />
         </div>
     );

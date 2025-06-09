@@ -109,3 +109,8 @@ export const fetchTaskById = async (taskId: string): Promise<Task | null> => {
         return null; // คืนค่า null หากไม่มีเอกสาร
     }
 };
+
+export const updateTaskStatus = async (taskId: string, newStatus: string): Promise<void> => {
+    const taskRef = doc(db, "tasks", taskId);
+    await updateDoc(taskRef, { status: newStatus }); // อัปเดตสถานะใน Firestore
+};
