@@ -71,12 +71,12 @@ export default function AddTaskSidebar({ isOpen, onClose, projectId, onTaskAdded
                 <div className="flex-1 overflow-y-auto p-4">
                     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                         <div className="space-y-2">
-                            <label htmlFor="title" className="text-sm font-medium text-gray-700">Title</label>
+                            <label htmlFor="title" className="text-sm font-medium text-white">Title</label>
                             <input
                                 id="title"
                                 type="text"
                                 placeholder="Enter task title"
-                                className="w-full border rounded-lg px-3 py-2"
+                                className="w-full border rounded-lg px-3 py-2 "
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 required
@@ -84,7 +84,7 @@ export default function AddTaskSidebar({ isOpen, onClose, projectId, onTaskAdded
                         </div>
 
                         <div className="space-y-2">
-                            <label htmlFor="description" className="text-sm font-medium text-gray-700">Description</label>
+                            <label htmlFor="description" className="text-sm font-medium text-white">Description</label>
                             <textarea
                                 id="description"
                                 placeholder="Enter task description"
@@ -96,7 +96,7 @@ export default function AddTaskSidebar({ isOpen, onClose, projectId, onTaskAdded
                         </div>
 
                         <div className="space-y-2">
-                            <label htmlFor="priority" className="text-sm font-medium text-gray-700">Priority</label>
+                            <label htmlFor="priority" className="text-sm font-medium text-white">Priority</label>
                             <select
                                 id="priority"
                                 className="w-full border rounded-lg px-3 py-2"
@@ -111,7 +111,7 @@ export default function AddTaskSidebar({ isOpen, onClose, projectId, onTaskAdded
                         </div>
 
                         <div className="space-y-2">
-                            <label htmlFor="status" className="text-sm font-medium text-gray-700">Status</label>
+                            <label htmlFor="status" className="text-sm font-medium text-white">Status</label>
                             <select
                                 id="status"
                                 className="w-full border rounded-lg px-3 py-2"
@@ -126,7 +126,7 @@ export default function AddTaskSidebar({ isOpen, onClose, projectId, onTaskAdded
                         </div>
 
                         <div className="space-y-2">
-                            <label htmlFor="dueDate" className="text-sm font-medium text-gray-700">Due Date</label>
+                            <label htmlFor="dueDate" className="text-sm font-medium text-white">Due Date</label>
                             <input
                                 id="dueDate"
                                 type="date"

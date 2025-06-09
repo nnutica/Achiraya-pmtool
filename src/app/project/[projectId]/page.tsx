@@ -8,7 +8,7 @@ import { Task } from "@/types/task";
 import TaskCard from "@/app/Components/TaskCard";
 import AddTaskSidebar from "@/app/Components/Addtasksidebar";
 import TaskDetailSidebar from "@/app/Components/TaskDetailSidebar";
-import DeleteModal from "@/app/Components/DeleteModal";
+
 import { deleteTask, fetchTasksByProjectId, updateTaskStatus } from "@/libs/taskservice";
 
 export default function ProjectDetail({ params }: { params: Promise<{ projectId: string }> }) {
@@ -40,22 +40,12 @@ export default function ProjectDetail({ params }: { params: Promise<{ projectId:
         }
     };
 
-    const handleDeleteTask = async () => {
-        if (!selectedTask) return;
 
-        try {
-            await deleteTask(selectedTask.id);
-            setTasks((prevTasks) => prevTasks.filter((task) => task.id !== selectedTask.id));
-            setShowDeleteModal(false);
-            setSelectedTask(null);
-        } catch (error) {
-            console.error("Error deleting task:", error);
-            alert("Failed to delete task. Please try again.");
-        }
-    };
+
+
 
     return (
-        <div className="min-h-screen bg-blue-900 text-white px-4 py-8">
+        <div className="min-h-screen bg-sky-950 text-white px-10 py-10">
             {/* หัวโปรเจกต์ + ปุ่มเพิ่ม Task */}
             <div className="flex justify-between items-center mb-8 border-b border-gray-700 pb-4">
                 <h1 className="text-3xl font-extrabold tracking-tight">
@@ -107,10 +97,11 @@ export default function ProjectDetail({ params }: { params: Promise<{ projectId:
                                         }
 
                                         if (task.status === "rejected") {
-                                            setSelectedTask(task);
-                                            setShowDeleteModal(true);
+                                            setSelectedTask(task); // ตั้งค่า selectedTask
+                                            setShowDeleteModal(true); // แสดง DeleteModal
                                         } else {
-                                            setSelectedTask(task);
+                                            setSelectedTask(task); // ตั้งค่า selectedTask สำหรับ TaskDetailSidebar
+                                            setShowDeleteModal(false); // ปิด DeleteModal หากไม่ใช่ rejected
                                         }
                                     }}
                                 />
@@ -137,21 +128,9 @@ export default function ProjectDetail({ params }: { params: Promise<{ projectId:
                 />
             )}
 
-            <DeleteModal
-                isOpen={showDeleteModal}
-                onClose={() => {
-                    setShowDeleteModal(false);
-                    setSelectedTask(null);
-                }}
-                onConfirm={async () => {
-                    await handleDeleteTask();
-                }}
-                taskTitle={selectedTask?.title || ""}
-                taskStatus={selectedTask?.status || ""}
-                setShowDetailSidebar={(show) => {
-                    if (show) setSelectedTask(selectedTask);
-                }}
-            />
+
+
+
         </div>
     );
 }

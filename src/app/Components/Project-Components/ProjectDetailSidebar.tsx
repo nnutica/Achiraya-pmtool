@@ -121,9 +121,10 @@ export default function ProjectDetailSidebar({ isOpen, onClose, project, onEdit 
 
 
             {/* Sidebar */}
-            <div className="bg-white rounded-l-lg shadow-lg p-6 w-full max-w-md h-full mt-16 z-50">
+            <div className="bg-white w-1/2 sm:w-1/2 rounded-l-3xl h-[calc(100%-4rem)] mt-16 overflow-y-auto p-6 shadow-lg relative">
                 {isEditing ? (
                     <>
+                        {/* Edit */}
                         <h2 className="text-xl font-bold mb-4">Edit Project</h2>
                         <input
                             type="text"
@@ -136,7 +137,7 @@ export default function ProjectDetailSidebar({ isOpen, onClose, project, onEdit 
                             value={editedDescription}
                             onChange={(e) => setEditedDescription(e.target.value)}
                             placeholder="Project Description"
-                            className="w-full border rounded-lg px-3 py-2 mb-4"
+                            className="w-full h-32 border rounded-lg px-3 py-2 mb-4"
                         />
                         <h3 className="text-lg font-semibold mb-2">Members</h3>
                         <ul className="mb-4">
@@ -150,13 +151,13 @@ export default function ProjectDetailSidebar({ isOpen, onClose, project, onEdit 
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => handleEditMemberSidebar(member)}
-                                            className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded-lg"
+                                            className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded-lg mb-4"
                                         >
                                             Edit
                                         </button>
                                         <button
                                             onClick={() => handleDeleteMember(member)}
-                                            className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-lg"
+                                            className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-lg mb-4"
                                         >
                                             Delete
                                         </button>
@@ -199,6 +200,7 @@ export default function ProjectDetailSidebar({ isOpen, onClose, project, onEdit 
                     </>
                 ) : (
                     <>
+                        {/*Not Edit */}
                         <h2 className="text-xl font-bold mb-4">{project.name}</h2>
                         <div className="text-gray-700 mb-4">
                             {project.description.split("\n").map((line, index) => (
@@ -206,9 +208,9 @@ export default function ProjectDetailSidebar({ isOpen, onClose, project, onEdit 
                             ))}
                         </div>
                         <h3 className="text-lg font-semibold mb-2">Members</h3>
-                        <ul className="mb-4 mt-2">
+                        <ul className="mb-6 mt-4">
                             {project.members?.map((member) => (
-                                <li key={member.id} className="text-gray-700">
+                                <li key={member.id} className="text-gray-700 mb-3">
                                     {member.name} ({member.email || "No email"})-Role: {member.role}
                                 </li>
                             ))}

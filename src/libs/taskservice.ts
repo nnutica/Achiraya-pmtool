@@ -35,7 +35,13 @@ export const updateTask = async (id: string, updates: Partial<Task>) => {
 };
 
 export const deleteTask = async (id: string) => {
-    return await deleteDoc(doc(db, "tasks", id));
+    try {
+        await deleteDoc(doc(db, "tasks", id));
+        console.log(`Task with ID ${id} deleted successfully.`);
+    } catch (error) {
+        console.error(`Error deleting task with ID ${id}:`, error);
+        throw error;
+    }
 }
 
 export const addComment = async (

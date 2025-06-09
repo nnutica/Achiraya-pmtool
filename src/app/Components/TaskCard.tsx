@@ -30,10 +30,15 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
             }}
         >
             <h2 className="text-lg font-semibold text-black">{task.title}</h2>
-            <p className="text-sm text-gray-500">{task.description}</p>
+            <div className="text-sm text-gray-500">
+                {task.description.split("\n").map((line, index) => (
+                    <p key={index}>{line}</p>
+                ))}
+            </div>
             <div className="mt-2 text-sm flex gap-2">
                 <Badge type="status" value={task.status} />
                 <Badge type="priority" value={task.priority} />
+                <p className="text-gray-400">{task.dueDate}</p>
             </div>
         </div>
     );

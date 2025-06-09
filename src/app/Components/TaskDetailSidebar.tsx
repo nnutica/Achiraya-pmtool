@@ -141,7 +141,7 @@ export default function TaskDetailSidebar({
             <div className="absolute inset-0 bg-black/20  transition-opacity"></div>
             <div
                 ref={sidebarRef}
-                className="bg-blue-950 w-8/12 sm:w-8/12 rounded-l-3xl h-[calc(100%-4rem)] mt-16 overflow-y-auto p-6 shadow-lg relative"
+                className="bg-blue-950 w-1/2 sm:w-1/2 rounded-l-3xl h-[calc(100%-4rem)] mt-16 overflow-y-auto p-6 shadow-lg relative"
             >
                 <div className="sticky top-0 bg-blue-950 pt-2 z-10 shadow mb-6">
                     <div className="flex justify-between items-center">
@@ -214,11 +214,11 @@ export default function TaskDetailSidebar({
                                     className="w-full  text-white border border-gray-600 rounded-lg px-3 py-2 appearance-none"
                                 >
                                     <option value="Unread" className="text-black">Unread</option>
-                                    <option value="in-progress" className="text-black">In Progress</option>
+                                    <option value="In-progress" className="text-black">In Progress</option>
                                     <option value="Wait Approve" className="text-black">Wait Approve</option>
                                     <option value="done" className="text-black">Done</option>
                                     <option value="rejected" className="text-black">Rejected</option>
-                                    <option value="cancelled" className="text-black">Cancelled</option>
+
                                 </select>
                             </div>
 
@@ -229,7 +229,7 @@ export default function TaskDetailSidebar({
                                     type="date"
                                     value={editedDueDate}
                                     onChange={(e) => setEditedDueDate(e.target.value)}
-                                    className="w-full border rounded-lg px-3 py-2"
+                                    className="w-full border rounded-lg px-3 py-2 "
                                 />
                             </div>
                         </div>
@@ -248,12 +248,11 @@ export default function TaskDetailSidebar({
                             <div className="space-y-3">
                                 {task.comments.map((comment, index) => (
                                     <div key={index} className="border-l-4 border-gray-200 pl-3 py-1">
-                                        <p className="text-shadow-blue-500">
+                                        <div className="text-shadow-blue-500">
                                             {comment.message.split("\n").map((line, index) => (
-                                                <p key={index}>{line}</p>
+                                                <div key={index}>{line}</div> // เปลี่ยนจาก <p> เป็น <div>
                                             ))}
-
-                                        </p>
+                                        </div>
                                         <p className="text-xs text-gray-200">
                                             By: {comment.author} • {formatDate(comment.createdAt)}
                                         </p>

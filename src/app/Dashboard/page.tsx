@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { fetchProjects, createProject, updateProject, Project, Member } from "@/libs/projectService";
-import ProjectCard from "@/app/Components/Project-Components/ProjectCard";
+import ProjectTable from "../Components/Project-Components/ProjectTable";
 import AddProjectModal from "@/app/Components/Project-Components/AddProjectModal";
 import ProjectDetailSidebar from "@/app/Components/Project-Components/ProjectDetailSidebar";
 import { useAuth } from "../Components/AuthProvider";
@@ -89,20 +89,22 @@ export default function Dashboard() {
             >
                 Add Project
             </button>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {projects.map((project) => (
-                    <ProjectCard
-                        key={project.id}
-                        project={{
+            <div className="flex items-start ">
+                <div className="w-full max-w-6xl">
+                    <ProjectTable
+                        projects={projects.map((project) => ({
                             id: project.id,
                             name: project.name,
                             description: project.description,
-                            members: project.members || [], // ค่าเริ่มต้นเป็น []
-                        }}
-                        onClick={() => handleProjectClick(project.id)}
-                        onDetail={() => handleDetail(project)}
+                            members: project.members ?? [], // กำหนดค่าเริ่มต้นให้ members เป็น []
+                            createdAt: project.createdAt,  // ส่ง createdAt
+                            updatedAt: project.updatedAt,  // ส่ง updatedAt
+                            userId: project.userId,        // ส่ง userId
+                        }))}
+                        onProjectClick={handleProjectClick}
+                        onProjectDetail={(project) => handleDetail(project as Project)}
                     />
-                ))}
+                </div>
             </div>
             <AddProjectModal
                 isOpen={showModal}
