@@ -23,6 +23,7 @@ export default function ProjectDetailSidebar({ isOpen, onClose, project, onEdit 
     const [showMemberSidebar, setShowMemberSidebar] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
+    const [editedDueDate, setEditedDueDate] = useState<string | "LTS">(project?.projectDueDate || "LTS");
 
     // ใช้ useEffect เพื่ออัปเดตค่าเมื่อ project เปลี่ยนแปลง
     useEffect(() => {
@@ -30,6 +31,7 @@ export default function ProjectDetailSidebar({ isOpen, onClose, project, onEdit 
             setEditedName(project.name || "");
             setEditedDescription(project.description || "");
             setEditedMembers(project.members || []);
+            setEditedDueDate(project.projectDueDate || "LTS");
         }
     }, [project]);
 
@@ -49,20 +51,7 @@ export default function ProjectDetailSidebar({ isOpen, onClose, project, onEdit 
         setNewMemberEmail("");
     };
 
-    const handleEditMember = (memberId: string, updatedName: string, updatedEmail: string, updatedRole: "Admin" | "Member" | "StackHolder") => {
-        if (!updatedName.trim() || !updatedRole.trim()) {
-            alert("Name and Role are required.");
-            return;
-        }
 
-        setEditedMembers((prev) =>
-            prev.map((member) =>
-                member.id === memberId
-                    ? { ...member, name: updatedName, email: updatedEmail || null, role: updatedRole }
-                    : member
-            )
-        );
-    };
 
     const handleDeleteMember = (member: Member) => {
         setMemberToDelete(member);
@@ -83,11 +72,8 @@ export default function ProjectDetailSidebar({ isOpen, onClose, project, onEdit 
             name: editedName,
             description: editedDescription,
             members: editedMembers,
+            projectDueDate: editedDueDate,
         };
-
-        // อัปเดต State ทันที
-
-
         try {
             await onEdit(updatedProject); // อัปเดตข้อมูลในฐานข้อมูล
             setShowSuccessModal(true); // แสดง modal แจ้งเตือนความสำเร็จ
@@ -139,6 +125,12 @@ export default function ProjectDetailSidebar({ isOpen, onClose, project, onEdit 
                             placeholder="Project Description"
                             className="w-full h-32 border rounded-lg px-3 py-2 mb-4"
                         />
+                        <input
+                            type="date"
+                            value={editedDueDate === "LTS" ? "" : editedDueDate}
+                            onChange={(e) => setEditedDueDate(e.target.value || "LTS")}
+                            className="w-full border rounded-lg px-3 py-2 mb-4"
+                        />
                         <h3 className="text-lg font-semibold mb-2">Members</h3>
                         <ul className="mb-4">
                             {editedMembers.map((member) => (
@@ -181,53 +173,90 @@ export default function ProjectDetailSidebar({ isOpen, onClose, project, onEdit 
                         />
                         <button
                             onClick={handleAddMember}
-                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg mb-4"
+                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg mb-4 mr-4"
                         >
                             Add Member
                         </button>
-                        <button
-                            onClick={handleSaveChanges}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-                        >
-                            {isLoading ? "Saving..." : "Save Changes"}
-                        </button>
-                        <button
-                            onClick={() => setIsEditing(false)}
-                            className="ml-4 bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg"
-                        >
-                            Cancel
-                        </button>
+                        <div className="flex gap-4 mb-4">
+                            <button
+                                onClick={handleSaveChanges}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg p-10"
+                            >
+                                {isLoading ? "Saving..." : "Save Changes"}
+                            </button>
+                            <button
+                                onClick={() => setIsEditing(false)}
+                                className="ml-4 bg-red-400 hover:bg-red-300 text-gray-800 px-4 py-2 rounded-lg"
+                            >
+                                Cancel
+                            </button>
+                        </div>
                     </>
                 ) : (
                     <>
-                        {/*Not Edit */}
-                        <h2 className="text-xl font-bold mb-4">{project.name}</h2>
-                        <div className="text-gray-700 mb-4">
-                            {project.description.split("\n").map((line, index) => (
-                                <p key={index}>{line}</p>
-                            ))}
+                        {/* Not Edit */}
+                        <div className="bg-white shadow-md rounded-lg p-6 max-w-3xl mx-auto">
+                            <h2 className="text-2xl font-bold mb-5 text-gray-900 border-b pb-2">
+                                {project.name}
+                            </h2>
+
+                            <div className="text-gray-700 whitespace-pre-line mb-6 leading-relaxed">
+                                {project.description}
+                            </div>
+
+                            <h3 className="text-xl font-semibold mb-3 text-gray-800 border-b pb-1">
+                                Members
+                            </h3>
+                            <ul className="mb-6 mt-3 space-y-2 max-h-48 overflow-auto">
+                                {project.members?.map((member) => {
+                                    // กำหนดสี role ตามเงื่อนไข
+                                    let roleColor = "text-gray-600";
+                                    if (member.role === "Admin") roleColor = "text-red-600 font-semibold";
+                                    else if (member.role === "StakeHolder") roleColor = "text-yellow-600 font-semibold";
+
+                                    return (
+                                        <li
+                                            key={member.id}
+                                            className="text-gray-700 bg-gray-50 rounded-md px-3 py-2 shadow-sm flex justify-between items-center"
+                                        >
+                                            <div>
+                                                <span className="font-medium">{member.name}</span>{" "}
+                                                <span className="text-sm text-gray-500">
+                                                    ({member.email || "No email"})
+                                                </span>
+                                            </div>
+                                            <span className={roleColor}>Role: {member.role}</span>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+
+                            <p className="text-gray-700 mb-6 font-medium">
+                                Due Date:{" "}
+                                <span className="text-blue-600">
+                                    {project.projectDueDate === "LTS"
+                                        ? "Long Term Support"
+                                        : project.projectDueDate}
+                                </span>
+                            </p>
+
+                            <div className="flex gap-4 justify-end">
+                                <button
+                                    onClick={() => setIsEditing(true)}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-lg transition"
+                                >
+                                    Edit Project
+                                </button>
+                                <button
+                                    onClick={onClose}
+                                    className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold px-5 py-2 rounded-lg transition"
+                                >
+                                    Close
+                                </button>
+                            </div>
                         </div>
-                        <h3 className="text-lg font-semibold mb-2">Members</h3>
-                        <ul className="mb-6 mt-4">
-                            {project.members?.map((member) => (
-                                <li key={member.id} className="text-gray-700 mb-3">
-                                    {member.name} ({member.email || "No email"})-Role: {member.role}
-                                </li>
-                            ))}
-                        </ul>
-                        <button
-                            onClick={() => setIsEditing(true)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-                        >
-                            Edit Project
-                        </button>
-                        <button
-                            onClick={onClose}
-                            className="ml-4 bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg"
-                        >
-                            Close
-                        </button>
                     </>
+
                 )}
             </div>
 

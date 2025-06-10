@@ -31,7 +31,7 @@ export default function MemberSidebar({ isOpen, onClose, member, onSave }: Membe
             ...member!,
             name: editedName,
             email: editedEmail || null,
-            role: editedRole as "Admin" | "Member" | "StackHolder",
+            role: editedRole as "Admin" | "Member" | "StakeHolder",
         };
 
         onSave(updatedMember);
@@ -42,7 +42,7 @@ export default function MemberSidebar({ isOpen, onClose, member, onSave }: Membe
 
     return (
         <div className="fixed inset-0 z-40 flex items-center justify-center">
-            <div className="absolute inset-0 bg-black/20 transition-opacity" onClick={onClose}></div>
+            <div className="absolute inset-0 bg-black/50 transition-opacity" onClick={onClose}></div>
             <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md z-50">
                 <h2 className="text-xl font-bold mb-4">Edit Member</h2>
                 <input
@@ -61,12 +61,12 @@ export default function MemberSidebar({ isOpen, onClose, member, onSave }: Membe
                 />
                 <select
                     value={editedRole}
-                    onChange={(e) => setEditedRole(e.target.value as "Admin" | "Member" | "StackHolder")}
+                    onChange={(e) => setEditedRole(e.target.value as "Admin" | "Member" | "StakeHolder")}
                     className="w-full border rounded-lg px-3 py-2 mb-4"
                 >
                     <option value="Admin">Admin</option>
                     <option value="Member">Member</option>
-                    <option value="StackHolder">StackHolder</option>
+                    <option value="StakeHolder">StakeHolder</option>
                 </select>
                 <button
                     onClick={handleSave}

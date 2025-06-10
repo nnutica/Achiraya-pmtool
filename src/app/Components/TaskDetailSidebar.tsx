@@ -28,8 +28,7 @@ export default function TaskDetailSidebar({
     const [editedPriority, setEditedPriority] = useState("");
     const [editedStatus, setEditedStatus] = useState("");
     const [editedDueDate, setEditedDueDate] = useState("");
-    const [newComment, setNewComment] = useState("");
-    const [newAuthor, setNewAuthor] = useState(currentUser?.displayName || "");
+
 
     useEffect(() => {
         if (task) {
@@ -122,28 +121,16 @@ export default function TaskDetailSidebar({
         }
     };
 
-    const handleStatusChange = async (newStatus: string) => {
-        if (!task) return;
 
-        try {
-            await updateTaskStatus(task.id, newStatus);
-            if (onTaskUpdate) {
-                onTaskUpdate({ ...task, status: newStatus as Taskstatus });
-            }
-        } catch (error) {
-            console.error("Error updating task status:", error);
-            alert("Failed to update task status. Please try again.");
-        }
-    };
 
     return (
         <div className="fixed inset-0 z-40 flex justify-end">
             <div className="absolute inset-0 bg-black/20  transition-opacity"></div>
             <div
                 ref={sidebarRef}
-                className="bg-blue-950 w-1/2 sm:w-1/2 rounded-l-3xl h-[calc(100%-4rem)] mt-16 overflow-y-auto p-6 shadow-lg relative"
+                className="bg-blue-950 w-1/2 sm:w-1/2 rounded-l-3xl h-full  overflow-y-auto p-6 shadow-lg relative"
             >
-                <div className="sticky top-0 bg-blue-950 pt-2 z-10 shadow mb-6">
+                <div className="sticky top-0 bg-blue-950 pt-2 z-10 shadow ">
                     <div className="flex justify-between items-center">
                         <h2 className="text-2xl font-bold">
                             {isEditing ? task.title : "Task Details"}

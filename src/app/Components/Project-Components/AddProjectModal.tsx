@@ -4,7 +4,7 @@ import React, { useState } from "react";
 interface AddProjectModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onCreate: (name: string, description: string, members: Member[]) => void;
+    onCreate: (name: string, description: string, members: Member[], projectDueDate: string) => void;
 }
 
 export default function AddProjectModal({ isOpen, onClose, onCreate }: AddProjectModalProps) {
@@ -13,7 +13,8 @@ export default function AddProjectModal({ isOpen, onClose, onCreate }: AddProjec
     const [members, setMembers] = useState<Member[]>([]);
     const [newMemberName, setNewMemberName] = useState("");
     const [newMemberEmail, setNewMemberEmail] = useState("");
-    const [newMemberRole, setNewMemberRole] = useState<"Admin" | "Member" | "StackHolder">("Member"); // ค่าเริ่มต้นเป็น Member
+    const [newMemberRole, setNewMemberRole] = useState<"Admin" | "Member" | "StakeHolder">("Member"); // ค่าเริ่มต้นเป็น Member
+    const [projectDueDate, setProjectDueDate] = useState<string>("LTS");
 
     const handleAddMember = () => {
         if (!newMemberName.trim()) return;
@@ -33,10 +34,11 @@ export default function AddProjectModal({ isOpen, onClose, onCreate }: AddProjec
     };
 
     const handleSubmit = () => {
-        onCreate(name, description, members); // ส่งข้อมูล members ไปด้วย
+        onCreate(name, description, members, projectDueDate); // ส่งข้อมูล members ไปด้วย
         setName("");
         setDescription("");
         setMembers([]);
+        setProjectDueDate("LTS");
         onClose();
     };
 
@@ -77,7 +79,7 @@ export default function AddProjectModal({ isOpen, onClose, onCreate }: AddProjec
                 />
                 <select
                     value={newMemberRole}
-                    onChange={(e) => setNewMemberRole(e.target.value as "Admin" | "Member" | "StackHolder")}
+                    onChange={(e) => setNewMemberRole(e.target.value as "Admin" | "Member" | "StakeHolder")}
                     className="w-full border rounded-lg px-3 py-2 mb-4"
                 >
                     <option value="Member">Member</option>
@@ -97,6 +99,13 @@ export default function AddProjectModal({ isOpen, onClose, onCreate }: AddProjec
                         </li>
                     ))}
                 </ul>
+                <input
+                    type="date"
+                    value={projectDueDate === "LTS" ? "" : projectDueDate}
+                    onChange={(e) => setProjectDueDate(e.target.value || "LTS")}
+                    className="w-full border rounded-lg px-3 py-2 mb-4"
+                />
+
                 <button
                     onClick={handleSubmit}
                     className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"

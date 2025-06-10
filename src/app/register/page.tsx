@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createUser } from "@/libs/authService";
+import Image from "next/image";
 
 export default function register() {
     const [email, setEmail] = useState("");
@@ -22,10 +23,19 @@ export default function register() {
     };
 
     return (
-        <div className="flex h-screen bg-sky-300">
-            <div className="bg-blue-600 flex-[6] p-8 sm:p-20 md:p-32 lg:p-36 w-full">
-                <div className="bg-white rounded-4xl p-8 sm:p-12 md:p-16 lg:p-20 shadow-lg">
-                    <h1 className="text-2xl font-bold mb-4">Register</h1>
+        <div className="flex h-screen ">
+            <div className="bg-sky-800 flex-[6] p-8 sm:p-16 md:p-20 lg:p-24 w-full rounded-b-xl">
+                <div className="bg-white rounded-4xl p-8 sm:p-10 md:p-12 lg:p-12 shadow-lg">
+                    <Image
+                        src="/achirayalogo.png"
+                        alt="Achiraya Logo"
+                        width={100}
+                        height={100}
+                        className="mx-auto mb-6 rounded-full shadow-lg"
+                    />
+                    <h1 className="text-2xl font-bold mb-4">
+
+                        Register</h1>
                     {error && <p className="text-red-500 mb-4">{error}</p>}
                     <form onSubmit={handleRegister}>
                         <div className="mb-4">

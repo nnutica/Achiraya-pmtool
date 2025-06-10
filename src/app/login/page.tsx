@@ -33,10 +33,19 @@ export default function Login() {
                     }}
                 />
             </div>
-            <div className="bg-indigo-800 flex-[6] p-8 sm:p-20 md:p-32 lg:p-36 w-full">
-                <div className="bg-white rounded-4xl p-8 sm:p-12 md:p-16 lg:p-20 shadow-lg">
-                    <h1 className="text-3xl font-bold mb-6 text-center text-blue-600">Achiraya Welcome</h1>
-                    <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
+            <div className="bg-indigo-800 flex-[6] p-8 sm:p-16 md:p-20 lg:p-24 w-full rounded-b-xl">
+                <div className="bg-white rounded-4xl p-8 sm:p-10 md:p-12 lg:p-12 shadow-lg">
+
+                    <Image
+                        src="/achirayalogo.png"
+                        alt="Achiraya Logo"
+                        width={100}
+                        height={100}
+                        className="flex mx-auto mb-6 rounded-full shadow-lg"
+                    />
+
+                    <h1 className="text-3xl font-bold mt-2 text-center text-blue-600">Achiraya Welcome</h1>
+                    <h2 className="text-2xl font-bold mt-4 mb-4 text-center">Login</h2>
                     {error && <p className="text-red-500 mb-4">{error}</p>}
                     <form onSubmit={handleLogin}>
                         <div className="mb-4">

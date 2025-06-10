@@ -7,11 +7,12 @@ import { TaskPriority, Taskstatus } from "@/types/task";
 interface Props {
     isOpen: boolean;
     onClose: () => void;
-    projectId: string; // เชื่อม Task กับ Project
+    projectId: string;
+    projectName: string; // เชื่อม Task กับ Project
     onTaskAdded: () => Promise<void>; // เพิ่ม Props สำหรับอัปเดต Task
 }
 
-export default function AddTaskSidebar({ isOpen, onClose, projectId, onTaskAdded }: Props) {
+export default function AddTaskSidebar({ isOpen, onClose, projectId, projectName, onTaskAdded }: Props) {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [priority, setPriority] = useState<TaskPriority>("Medium");
@@ -29,7 +30,8 @@ export default function AddTaskSidebar({ isOpen, onClose, projectId, onTaskAdded
             priority,
             dueDate: dueDate || null,
             comments: [],
-            projectId, // เชื่อม Task กับ Project
+            projectId,
+            projectName // เชื่อม Task กับ Project
         });
 
         await onTaskAdded(); // เรียกฟังก์ชันเพื่อ Fetch Task ใหม่
@@ -53,7 +55,7 @@ export default function AddTaskSidebar({ isOpen, onClose, projectId, onTaskAdded
 
             {/* Sidebar with slide-in */}
             <div
-                className="w-full sm:w-[400px] bg-blue-900 shadow-lg rounded-l-3xl flex flex-col h-[calc(100%-4rem)] mt-16 relative transition-transform duration-300 ease-in-out"
+                className="w-full sm:w-[400px] bg-blue-950 shadow-lg rounded-l-3xl flex flex-col h-fit p-1  relative transition-transform duration-300 ease-in-out"
                 style={{ transform: isOpen ? 'translateX(0)' : 'translateX(100%)' }}
             >
                 {/* Header - fixed at top */}
@@ -71,12 +73,12 @@ export default function AddTaskSidebar({ isOpen, onClose, projectId, onTaskAdded
                 <div className="flex-1 overflow-y-auto p-4">
                     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                         <div className="space-y-2">
-                            <label htmlFor="title" className="text-sm font-medium text-white">Title</label>
+                            <label htmlFor="title" className="text-sm font-medium text-white ">Title</label>
                             <input
                                 id="title"
                                 type="text"
                                 placeholder="Enter task title"
-                                className="w-full border rounded-lg px-3 py-2 "
+                                className="w-full border rounded-lg px-3 py-2 mt-4 "
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 required
@@ -88,7 +90,7 @@ export default function AddTaskSidebar({ isOpen, onClose, projectId, onTaskAdded
                             <textarea
                                 id="description"
                                 placeholder="Enter task description"
-                                className="w-full border rounded-lg px-3 py-2 min-h-[100px]"
+                                className="w-full border rounded-lg px-3 py-2 min-h-[100px]  mt-4"
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 required
@@ -99,14 +101,14 @@ export default function AddTaskSidebar({ isOpen, onClose, projectId, onTaskAdded
                             <label htmlFor="priority" className="text-sm font-medium text-white">Priority</label>
                             <select
                                 id="priority"
-                                className="w-full border rounded-lg px-3 py-2"
+                                className="w-full border rounded-lg px-3 py-2 text-white"
                                 value={priority}
                                 onChange={(e) => setPriority(e.target.value as TaskPriority)}
                             >
-                                <option value="Low">Low</option>
-                                <option value="Medium">Medium</option>
-                                <option value="High">High</option>
-                                <option value="Urgent">Urgent</option>
+                                <option value="Low" className="text-gray-700">Low</option>
+                                <option value="Medium" className="text-gray-700">Medium</option>
+                                <option value="High" className="text-gray-700">High</option>
+                                <option value="Urgent" className="text-gray-700">Urgent</option>
                             </select>
                         </div>
 
@@ -114,14 +116,14 @@ export default function AddTaskSidebar({ isOpen, onClose, projectId, onTaskAdded
                             <label htmlFor="status" className="text-sm font-medium text-white">Status</label>
                             <select
                                 id="status"
-                                className="w-full border rounded-lg px-3 py-2"
+                                className="w-full border rounded-lg px-3 py-2 text-white"
                                 value={status}
                                 onChange={(e) => setStatus(e.target.value as Taskstatus)}
                             >
-                                <option value="Unread">Unread</option>
-                                <option value="in-progress">In Progress</option>
-                                <option value="Wait Approve">Wait Approve</option>
-                                <option value="done">Done</option>
+                                <option value="Unread" className="text-gray-700">Unread</option>
+                                <option value="in-progress" className="text-gray-700">In Progress</option>
+                                <option value="Wait Approve" className="text-gray-700">Wait Approve</option>
+                                <option value="done" className="text-gray-700">Done</option>
                             </select>
                         </div>
 

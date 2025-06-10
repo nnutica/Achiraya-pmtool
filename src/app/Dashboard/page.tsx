@@ -6,6 +6,7 @@ import { fetchProjects, createProject, updateProject, Project, Member } from "@/
 import ProjectTable from "../Components/Project-Components/ProjectTable";
 import AddProjectModal from "@/app/Components/Project-Components/AddProjectModal";
 import ProjectDetailSidebar from "@/app/Components/Project-Components/ProjectDetailSidebar";
+import { MdSpaceDashboard } from "react-icons/md";
 import { useAuth } from "../Components/AuthProvider";
 
 export default function Dashboard() {
@@ -26,7 +27,7 @@ export default function Dashboard() {
         loadProjects();
     }, [currentUser]);
 
-    const handleCreateProject = async (name: string, description: string, members: Member[]) => {
+    const handleCreateProject = async (name: string, description: string, members: Member[], projectDueDate: string) => {
         if (!currentUser) {
             alert("User not logged in.");
             return;
@@ -40,6 +41,7 @@ export default function Dashboard() {
             userId: currentUser.uid,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
+            projectDueDate, // กำหนดค่าเริ่มต้นให้ projectDueDate เป็น "LTS"
         };
 
         try {
@@ -80,8 +82,8 @@ export default function Dashboard() {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h1 className="text-2xl font-bold mb-6 text-white">
-                Your {currentUser ? currentUser.displayName : ""} Project Dashboard
+            <h1 className="text-3xl font-bold mb-6 text-white flex items-center gap-2">
+                Your {currentUser ? currentUser.displayName : ""}  Project Dashboard <MdSpaceDashboard />
             </h1>
             <button
                 onClick={() => setShowModal(true)}
@@ -99,7 +101,8 @@ export default function Dashboard() {
                             members: project.members ?? [], // กำหนดค่าเริ่มต้นให้ members เป็น []
                             createdAt: project.createdAt,  // ส่ง createdAt
                             updatedAt: project.updatedAt,  // ส่ง updatedAt
-                            userId: project.userId,        // ส่ง userId
+                            userId: project.userId,
+                            projectDueDate: project.projectDueDate       // ส่ง DueDate มาด้วย
                         }))}
                         onProjectClick={handleProjectClick}
                         onProjectDetail={(project) => handleDetail(project as Project)}

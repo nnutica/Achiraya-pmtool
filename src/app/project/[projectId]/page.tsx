@@ -146,6 +146,7 @@ export default function ProjectDetail({ params }: { params: Promise<{ projectId:
                 isOpen={showAddSidebar}
                 onClose={() => setShowAddSidebar(false)}
                 projectId={project?.id || ""}
+                projectName={project?.name || "Project Name"}
                 onTaskAdded={handleTaskUpdate}
             />
 
@@ -161,7 +162,13 @@ export default function ProjectDetail({ params }: { params: Promise<{ projectId:
 
             <DeleteModal
                 isOpen={showDeleteModal}
-                onClose={() => setShowDeleteModal(false)} // ปิด Modal
+                onClose={() => {
+                    setShowDeleteModal(false); // ปิด DeleteModal
+                    if (deleteTaskId) {
+                        const taskToReopen = tasks.find((task) => task.id === deleteTaskId);
+                        setSelectedTask(taskToReopen || null); // เปิด TaskDetailSidebar
+                    }
+                }}
                 onConfirm={async () => {
                     if (deleteTaskId) {
                         try {

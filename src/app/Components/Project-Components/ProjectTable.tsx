@@ -3,7 +3,7 @@ import React from "react";
 interface Member {
     id: string;
     name: string;
-    role?: "Admin" | "Member" | "StackHolder";
+    role?: "Admin" | "Member" | "StakeHolder";
 }
 
 interface ProjectCardProps {
@@ -15,6 +15,7 @@ interface ProjectCardProps {
         createdAt?: string;
         updatedAt?: string;
         userId?: string;
+        projectDueDate?: string | "LTS"; // วันที่กำหนดเส้นตายของ Project
     }[];
     onProjectClick: (projectId: string) => void;
     onProjectDetail: (project: {
@@ -25,38 +26,39 @@ interface ProjectCardProps {
         createdAt?: string;
         updatedAt?: string;
         userId?: string;
+        projectDueDate?: string | "LTS"; // วันที่กำหนดเส้นตายของ Project
     }) => void;
 }
 
 export default function ProjectTable({ projects, onProjectClick, onProjectDetail }: ProjectCardProps) {
     return (
         <div className="min-h-screen  flex items-start justify-center px-4 py-8">
-            <div className="w-full max-w-6xl bg-white rounded-xl shadow-lg overflow-hidden">
-                <table className="table-auto w-full border-collapse border border-gray-300">
+            <div className="w-full max-w-6xl  rounded-b-2xl shadow-lg overflow-hidden">
+                <table className="table-auto w-full border-collapse border border-gray-400 rounded-b-2xl">
                     <thead>
-                        <tr className="bg-sky-800 text-gray-300">
-                            <th className="border px-6 py-4 text-left text-lg">Project Name</th>
-                            <th className="border px-6 py-4 text-left text-lg">Description</th>
-                            <th className="border px-6 py-4 text-center text-lg">Members</th>
-                            <th className="border px-6 py-4 text-center text-lg">Actions</th>
+                        <tr className="bg-gray-50 dark:bg-gray-700 rounded-2xl">
+                            <th className="w-1/6 border border-gray-300 p-4 text-left font-semibold text-gray-900 dark:border-gray-600 dark:text-gray-200 ">Project Name</th>
+                            <th className="w-2/6 border border-gray-300 p-4 text-left font-semibold text-gray-900 dark:border-gray-600 dark:text-gray-200">Description</th>
+                            <th className="w-2/6 border border-gray-300 p-4 text-left font-semibold text-gray-900 dark:border-gray-600 dark:text-gray-200">Members</th>
+                            <th className="w-1/6 border border-gray-300 p-4 text-left font-semibold text-gray-900 dark:border-gray-600 dark:text-gray-200">Due Date</th>
+                            <th className="w-1/6 border border-gray-300 p-4 text-left font-semibold text-gray-900 dark:border-gray-600 dark:text-gray-200">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {projects.map((project) => (
                             <tr
                                 key={project.id}
-                                className="bg-white hover:bg-blue-100 cursor-pointer transition-colors duration-200"
+                                className="bg-zinc-600 hover:bg-blue-500 cursor-pointer transition-colors duration-200"
                                 onClick={() => onProjectClick(project.id)}
                             >
-                                <td className="border px-6 py-3 font-semibold text-blue-900">{project.name}</td>
-                                <td className="border px-6 py-3 whitespace-pre-line text-gray-700">
-                                    {project.description
-                                        .split("\n")
-                                        .slice(0, 5)
-                                        .join("\n")}
-                                    {project.description.split("\n").length > 5 && " ..."}
+                                <td className="border border-gray-300 p-4 text-cyan-100">{project.name}</td>
+                                <td className="border border-gray-300 p-4 text-white ">
+                                    {project.description.split("\n").slice(0, 5).map((line, index) => (
+                                        <p key={index}>{line}</p>
+                                    ))}
+
                                 </td>
-                                <td className="border px-6 py-3 text-start text-blue-800 font-medium">
+                                <td className="border border-gray-300 p-4 text-cyan-100 ">
                                     {project.members.length > 0 ? (
                                         <ul className="list-disc pl-5">
                                             {project.members.map((member) => (
@@ -69,7 +71,14 @@ export default function ProjectTable({ projects, onProjectClick, onProjectDetail
                                         <span className="text-gray-500">No members</span>
                                     )}
                                 </td>
-                                <td className="border px-6 py-3 text-center">
+                                <td className="border border-gray-300 p-4 text-cyan-100">
+                                    {project.projectDueDate
+                                        ? project.projectDueDate === "LTS"
+                                            ? "Long Term Support"
+                                            : project.projectDueDate
+                                        : "LTS"}
+                                </td>
+                                <td className="border  border-gray-300 px-6 py-3 text-center">
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();

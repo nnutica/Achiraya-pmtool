@@ -10,6 +10,7 @@ export interface Project {
     createdAt: string;
     updatedAt: string;
     userId: string;
+    projectDueDate?: string | "LTS"; // วันที่กำหนดเส้นตายของ Project
 }
 
 const projectsCollection = collection(db, "projects");
@@ -39,6 +40,7 @@ export const updateProject = async (project: Project) => {
         description: project.description,
         members: project.members,
         updatedAt: new Date().toISOString(),
+        projectDueDate: project.projectDueDate,
     });
 };
 

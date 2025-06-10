@@ -12,7 +12,8 @@ export interface Task {
     updatedAt: string; // เปลี่ยนจาก Date เป็น string
     dueDate?: string | null; // เปลี่ยนจาก Date เป็น string
     comments?: Comment[];
-    projectId: string; // ID ของ Project ที่ Task นี้อยู่
+    projectId: string;
+    projectName: string // ID ของ Project ที่ Task นี้อยู่
 }
 
 export interface Comment {

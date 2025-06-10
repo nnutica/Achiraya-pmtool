@@ -2,58 +2,96 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useAuth } from "./AuthProvider"; // Import useAuth
+import { useAuth } from "./AuthProvider";
+import { FiSidebar, FiLogOut, FiHome, FiGrid } from "react-icons/fi";
 
-export default function Navbar() {
-    const { currentUser, signOut } = useAuth(); // เพิ่ม signOut จาก AuthProvider
-    const [dropdownOpen, setDropdownOpen] = useState(false); // state สำหรับ dropdown
+export default function Sidebar() {
+    const { currentUser, signOut } = useAuth();
 
-    if (!currentUser) return null; // ซ่อน Navbar หากไม่มีผู้ใช้ล็อกอิน
+    const [isHovering, setIsHovering] = useState(false);
+
+    if (!currentUser) return null;
+
+    const sidebarIsVisible = isHovering;
 
     return (
-        <nav className="bg-blue-300 shadow-md">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between h-16">
-                    <div className="flex items-center">
-                        <Link href="/" className="text-xl font-bold text-gray-800">
-                            Achiraya Tool
-                        </Link>
+        <>
+            {/* Sidebar */}
+            <aside
+                onMouseEnter={() => setIsHovering(true)}
+                onMouseLeave={() => setIsHovering(false)}
+                className={`fixed top-0 left-0 h-screen bg-blue-300 shadow-lg z-40 flex flex-col justify-between transition-all duration-300
+          ${sidebarIsVisible ? "w-64" : "w-16"}
+        `}
+            >
+                {/* ส่วนบน: โลโก้ + ปุ่มปิด (เอาออก) + เมนู */}
+                <div>
+                    <div className="p-6 flex items-center justify-start">
+                        {sidebarIsVisible ? (
+                            <Link href="/" className="text-2xl font-bold text-gray-800 whitespace-nowrap">
+                                Achiraya Tool
+                            </Link>
+                        ) : (
+                            // แสดงแค่ตัวอักษรย่อหรือไอคอนตอน sidebar ปิด (ถ้าต้องการ)
+                            <div className="flex justify-center items-center w-6 h-6 text-gray-800 mx-auto">
+                                <FiSidebar className="w-6 h-6" />
+                            </div>
+
+                        )}
                     </div>
-                    <div className="flex items-center space-x-4 relative">
-                        <Link href="/" className="text-gray-600 hover:text-gray-900">
-                            Home
-                        </Link>
-                        <Link href="/Dashboard" className="text-gray-600 hover:text-gray-900">
-                            Dashboard
+
+                    {/* เมนูลิงก์ */}
+                    <nav className="flex flex-col px-2 space-y-2">
+                        <Link
+                            href="/"
+                            className={`flex items-center gap-3 px-3 py-2 rounded-md hover:bg-blue-400 transition
+                ${!sidebarIsVisible ? "justify-center" : ""}
+              `}
+                        >
+                            <FiHome className="w-6 h-6 text-gray-800" />
+                            {sidebarIsVisible && <span>Home</span>}
                         </Link>
 
-                        {/* Dropdown Trigger */}
-                        <div className="relative">
-                            <button
-                                onClick={() => setDropdownOpen(!dropdownOpen)}
-                                className="text-gray-600 hover:text-gray-900 focus:outline-none"
-                            >
+                        <Link
+                            href="/Dashboard"
+                            className={`flex items-center gap-3 px-3 py-2 rounded-md hover:bg-blue-400 transition
+                ${!sidebarIsVisible ? "justify-center" : ""}
+              `}
+                        >
+                            <FiGrid className="w-6 h-6 text-gray-800" />
+                            {sidebarIsVisible && <span>Dashboard</span>}
+                        </Link>
+
+                        {sidebarIsVisible && (
+                            <p className="mt-6 px-3 text-gray-700 font-semibold whitespace-nowrap">
                                 Welcome, {currentUser.displayName || "User"}
-                            </button>
-
-                            {/* Dropdown Menu */}
-                            {dropdownOpen && (
-                                <div className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg z-50">
-                                    <button
-                                        onClick={() => {
-                                            signOut();
-                                            setDropdownOpen(false);
-                                        }}
-                                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                                    >
-                                        Sign Out
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                            </p>
+                        )}
+                    </nav>
                 </div>
-            </div>
-        </nav>
+
+                {/* ปุ่ม Sign Out */}
+                <div className="px-4 py-6 border-t border-blue-400">
+                    <button
+                        onClick={() => signOut()}
+                        className={`flex items-center gap-3 w-full rounded-md px-3 py-2 transition
+              ${sidebarIsVisible
+                                ? "bg-red-600 text-white hover:bg-red-700"
+                                : "justify-center text-red-600 hover:bg-red-100"}
+            `}
+                        aria-label="Sign Out"
+                    >
+                        <FiLogOut className={`w-6 h-6 ${sidebarIsVisible ? "text-white" : "text-red-600"}`} />
+                        {sidebarIsVisible && <span>Sign Out</span>}
+                    </button>
+                </div>
+            </aside>
+
+            {/* Overlay ปิดเมื่อคลิกนอก sidebar และจอเล็ก (ถ้าต้องการ) */}
+            {/* <div
+          className={`fixed inset-0 bg-black/40 z-30 md:hidden ${sidebarIsVisible ? "" : "hidden"}`}
+          onClick={() => setIsHovering(false)}
+      ></div> */}
+        </>
     );
 }
