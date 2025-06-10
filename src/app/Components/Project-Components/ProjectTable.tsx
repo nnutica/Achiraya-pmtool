@@ -42,6 +42,7 @@ export default function ProjectTable({ projects, onProjectClick, onProjectDetail
                             <th className="w-2/6 border border-gray-300 p-4 text-left font-semibold text-gray-900 dark:border-gray-600 dark:text-gray-200">Members</th>
                             <th className="w-1/6 border border-gray-300 p-4 text-left font-semibold text-gray-900 dark:border-gray-600 dark:text-gray-200">Due Date</th>
                             <th className="w-1/6 border border-gray-300 p-4 text-left font-semibold text-gray-900 dark:border-gray-600 dark:text-gray-200">Actions</th>
+
                         </tr>
                     </thead>
                     <tbody>
@@ -88,6 +89,7 @@ export default function ProjectTable({ projects, onProjectClick, onProjectDetail
                                     >
                                         Detail
                                     </button>
+
                                 </td>
                             </tr>
                         ))}

@@ -4,35 +4,38 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { Auth } from "@/libs/firebase";
 import { logout } from "@/libs/authService";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { useRouter } from "next/navigation"; // ใช้ useRouter จาก Next.js
+import { useRouter } from "next/navigation";
 
 interface AuthContextType {
-    currentUser: User | null;
-    signOut: () => Promise<void>; // เพิ่ม signOut
+    currentUser: User | null | undefined; // เพิ่ม undefined สำหรับ loading state
+    signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-    const [currentUser, setCurrentUser] = useState<User | null>(null);
-    const router = useRouter(); // เรียกใช้ router
+    const [currentUser, setCurrentUser] = useState<User | null | undefined>(undefined); // เริ่มต้นด้วย undefined
+    const router = useRouter();
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(Auth, (user) => {
-            if (!user) {
-                logout(); // เรียก logout จาก authService
-                router.push("/login"); // เปลี่ยนไปหน้า login
-            }
-            setCurrentUser(user);
+            setCurrentUser(user); // set user ทันที (null หรือ User object)
+
+            // ถ้าไม่มี user และไม่ใช่ loading state แรก แสดงว่า logout จริงๆ
+            // แต่เราจะไม่ redirect ที่นี่ เพราะแต่ละหน้าจะจัดการเอง
         });
 
         return () => unsubscribe();
-    }, [router]); // เพิ่ม router ใน dependency array
+    }, [router]);
 
     const signOut = async () => {
-        await logout(); // เรียกใช้ logout จาก authService
-        setCurrentUser(null); // ล้าง currentUser หลังออกจากระบบ
-        router.push("/login"); // เปลี่ยนไปหน้า login หลังออกจากระบบ
+        try {
+            await logout(); // เรียกใช้ logout จาก authService
+            setCurrentUser(null); // ล้าง currentUser หลังออกจากระบบ
+            router.push("/login"); // เปลี่ยนไปหน้า login หลังออกจากระบบ
+        } catch (error) {
+            console.error("Error signing out:", error);
+        }
     };
 
     return (

@@ -47,7 +47,7 @@ export default function AddProjectModal({ isOpen, onClose, onCreate }: AddProjec
     return (
         <div className="fixed inset-0 z-40 flex justify-end">
             <div className="absolute inset-0 bg-black/20  transition-opacity" onClick={onClose}></div>
-            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mt-16 z-50">
+            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md  z-50">
                 <h2 className="text-xl font-bold mb-4">Add Project</h2>
                 <input
                     type="text"
