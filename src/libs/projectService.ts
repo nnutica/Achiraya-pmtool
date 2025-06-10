@@ -19,7 +19,7 @@ export const fetchProjects = async (userId: string): Promise<Project[]> => {
     const q = query(
         projectsCollection,
         where("userId", "==", userId), // กรอง Project ตาม userId
-        orderBy("createdAt", "desc")
+        orderBy("updatedAt", "desc")
     );
     const snapshot = await getDocs(q);
     return snapshot.docs.map(doc => ({
