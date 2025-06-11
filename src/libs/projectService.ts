@@ -1,4 +1,4 @@
-import { Member } from "@/types/project";
+import { Member, ProjectStatus } from "@/types/project";
 import { db } from "./firebase";
 import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, where, orderBy, getDoc, setDoc } from "firebase/firestore";
 
@@ -10,7 +10,8 @@ export interface Project {
     createdAt: string;
     updatedAt: string;
     userId: string;
-    projectDueDate?: string | "LTS"; // วันที่กำหนดเส้นตายของ Project
+    projectDueDate?: string | "LTS";
+    projectStatus?: ProjectStatus// วันที่กำหนดเส้นตายของ Project
 }
 
 const projectsCollection = collection(db, "projects");
@@ -41,6 +42,7 @@ export const updateProject = async (project: Project) => {
         members: project.members,
         updatedAt: new Date().toISOString(),
         projectDueDate: project.projectDueDate,
+        projectStatus: project.projectStatus,
     });
 };
 

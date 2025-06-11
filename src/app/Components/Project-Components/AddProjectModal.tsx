@@ -1,10 +1,10 @@
-import { Member } from "@/types/project";
+import { Member, ProjectStatus } from "@/types/project";
 import React, { useState } from "react";
 
 interface AddProjectModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onCreate: (name: string, description: string, members: Member[], projectDueDate: string) => void;
+    onCreate: (name: string, description: string, members: Member[], projectDueDate: string, ProjectStatus: ProjectStatus) => void;
 }
 
 export default function AddProjectModal({ isOpen, onClose, onCreate }: AddProjectModalProps) {
@@ -15,6 +15,7 @@ export default function AddProjectModal({ isOpen, onClose, onCreate }: AddProjec
     const [newMemberEmail, setNewMemberEmail] = useState("");
     const [newMemberRole, setNewMemberRole] = useState<"Admin" | "Member" | "StakeHolder">("Member"); // ค่าเริ่มต้นเป็น Member
     const [projectDueDate, setProjectDueDate] = useState<string>("LTS");
+    const [ProjectStatus, setProjectStatus] = useState<ProjectStatus>("New"); // ค่าเริ่มต้นเป็น Unread
 
     const handleAddMember = () => {
         if (!newMemberName.trim()) return;
@@ -34,11 +35,12 @@ export default function AddProjectModal({ isOpen, onClose, onCreate }: AddProjec
     };
 
     const handleSubmit = () => {
-        onCreate(name, description, members, projectDueDate); // ส่งข้อมูล members ไปด้วย
+        onCreate(name, description, members, projectDueDate, ProjectStatus); // ส่งข้อมูล members ไปด้วย
         setName("");
         setDescription("");
         setMembers([]);
         setProjectDueDate("LTS");
+        setProjectStatus("New"); // รีเซ็ตค่าเริ่มต้น
         onClose();
     };
 
@@ -99,6 +101,21 @@ export default function AddProjectModal({ isOpen, onClose, onCreate }: AddProjec
                         </li>
                     ))}
                 </ul>
+                <label htmlFor="project-status" className="block text-sm font-medium text-gray-700 mb-2">
+                    Project Status
+                </label>
+                <select
+                    id="project-status"
+                    value={ProjectStatus}
+                    onChange={(e) => setProjectStatus(e.target.value as ProjectStatus)}
+                    className="w-full border rounded-lg px-3 py-2 mb-4"
+                >
+                    {(["New", "In-progress", "Success", "cancelled"] as ProjectStatus[]).map((status) => (
+                        <option key={status} value={status}>
+                            {status}
+                        </option>
+                    ))}
+                </select>
                 <input
                     type="date"
                     value={projectDueDate === "LTS" ? "" : projectDueDate}

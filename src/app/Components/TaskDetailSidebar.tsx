@@ -28,7 +28,7 @@ export default function TaskDetailSidebar({
     const [editedPriority, setEditedPriority] = useState("");
     const [editedStatus, setEditedStatus] = useState("");
     const [editedDueDate, setEditedDueDate] = useState("");
-
+    const [editedAssignedTo, setEditedAssignedTo] = useState<Member | "All">("All"); // เพิ่ม State สำหรับ AssignedTo
 
     useEffect(() => {
         if (task) {
@@ -37,6 +37,7 @@ export default function TaskDetailSidebar({
             setEditedPriority(task.priority);
             setEditedStatus(task.status);
             setEditedDueDate(task.dueDate?.split("T")[0] || "");
+            setEditedAssignedTo(task.AssignedTo || "All"); // ตั้งค่า AssignedTo
         }
     }, [task]);
 
@@ -64,6 +65,7 @@ export default function TaskDetailSidebar({
             setEditedPriority(task.priority);
             setEditedStatus(task.status);
             setEditedDueDate(task.dueDate?.split("T")[0] || "");
+            setEditedAssignedTo(task.AssignedTo || "All");
         }
     };
 
@@ -76,6 +78,7 @@ export default function TaskDetailSidebar({
                 priority: editedPriority as TaskPriority,
                 status: editedStatus as Taskstatus,
                 dueDate: editedDueDate || null,
+                AssignedTo: editedAssignedTo  // เพิ่ม AssignedTo ในการอัปเดต
             });
 
             if (onTaskUpdate) {
@@ -85,6 +88,7 @@ export default function TaskDetailSidebar({
                     priority: editedPriority as TaskPriority,
                     status: editedStatus as Taskstatus,
                     dueDate: editedDueDate || null,
+                    AssignedTo: editedAssignedTo,
                     updatedAt: new Date().toISOString(),
                 });
             }
@@ -154,6 +158,40 @@ export default function TaskDetailSidebar({
                         <Badge type="priority" value={task.priority} />
                     </div>
 
+                    {/* Assigned To Section */}
+                    <div className="mb-4">
+                        <h3 className="text-lg font-semibold mb-2 text-white">Assigned To</h3>
+                        {!isEditing ? (
+                            <p className="text-white">
+                                {task.AssignedTo === "All"
+                                    ? "Everyone"
+                                    : (typeof task.AssignedTo === 'object' ? task.AssignedTo.name : "Everyone")
+                                }
+                            </p>
+                        ) : (
+                            <select
+                                value={editedAssignedTo === "All" ? "All" : (typeof editedAssignedTo === 'object' ? editedAssignedTo.id : "All")}
+                                onChange={(e) => {
+                                    const selectedValue = e.target.value;
+                                    if (selectedValue === "All") {
+                                        setEditedAssignedTo("All");
+                                    } else {
+                                        const selectedMember = project.members?.find(member => member.id === selectedValue);
+                                        setEditedAssignedTo(selectedMember || "All");
+                                    }
+                                }}
+                                className="w-full border rounded-lg px-3 py-2 text-white"
+                            >
+                                <option value="All" className="text-black">Everyone</option>
+                                {project.members?.map((member) => (
+                                    <option key={member.id} value={member.id} className="text-black">
+                                        {member.name}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
+                    </div>
+
                     <div className="mb-6">
                         <h3 className="text-lg font-semibold mb-2">Description</h3>
                         {!isEditing ? (
@@ -169,7 +207,7 @@ export default function TaskDetailSidebar({
                             <textarea
                                 value={editedDescription}
                                 onChange={(e) => setEditedDescription(e.target.value)}
-                                className="w-full border rounded-lg px-3 py-2 min-h-[120px]"
+                                className="w-full border rounded-lg px-3 py-2 min-h-[120px] text-white"
                                 placeholder="Enter task description"
                             />
                         )}
@@ -183,12 +221,12 @@ export default function TaskDetailSidebar({
                                 <select
                                     value={editedPriority}
                                     onChange={(e) => setEditedPriority(e.target.value)}
-                                    className="w-full border rounded-lg px-3 py-2"
+                                    className="w-full border rounded-lg px-3 py-2 text-white"
                                 >
-                                    <option value="Low" className="text-black">Low</option>
-                                    <option value="Medium" className="text-black">Medium</option>
-                                    <option value="High" className="text-black">High</option>
-                                    <option value="Urgent" className="text-black">Urgent</option>
+                                    <option value="Low" className="text-zinc-700">Low</option>
+                                    <option value="Medium" className="text-zinc-700">Medium</option>
+                                    <option value="High" className="text-zinc-700">High</option>
+                                    <option value="Urgent" className="text-red-700">Urgent</option>
                                 </select>
                             </div>
 
@@ -198,14 +236,13 @@ export default function TaskDetailSidebar({
                                 <select
                                     value={editedStatus}
                                     onChange={(e) => setEditedStatus(e.target.value)}
-                                    className="w-full  text-white border border-gray-600 rounded-lg px-3 py-2 appearance-none"
+                                    className="w-full text-white border border-amber-50 rounded-lg px-3 py-2 appearance-none"
                                 >
-                                    <option value="Unread" className="text-black">Unread</option>
-                                    <option value="In-progress" className="text-black">In Progress</option>
-                                    <option value="Wait Approve" className="text-black">Wait Approve</option>
-                                    <option value="done" className="text-black">Done</option>
-                                    <option value="rejected" className="text-black">Rejected</option>
-
+                                    <option value="Unread" className="text-zinc-700">Unread</option>
+                                    <option value="In-progress" className="text-zinc-700">In Progress</option>
+                                    <option value="Wait Approve" className="text-zinc-700">Wait Approve</option>
+                                    <option value="done" className="text-zinc-700">Done</option>
+                                    <option value="rejected" className="text-zinc-700">Rejected</option>
                                 </select>
                             </div>
 
@@ -216,7 +253,7 @@ export default function TaskDetailSidebar({
                                     type="date"
                                     value={editedDueDate}
                                     onChange={(e) => setEditedDueDate(e.target.value)}
-                                    className="w-full border rounded-lg px-3 py-2 "
+                                    className="w-full border rounded-lg px-3 py-2 text-white"
                                 />
                             </div>
                         </div>
@@ -237,7 +274,7 @@ export default function TaskDetailSidebar({
                                     <div key={index} className="border-l-4 border-gray-200 pl-3 py-1">
                                         <div className="text-shadow-blue-500">
                                             {comment.message.split("\n").map((line, index) => (
-                                                <div key={index}>{line}</div> // เปลี่ยนจาก <p> เป็น <div>
+                                                <div key={index}>{line}</div>
                                             ))}
                                         </div>
                                         <p className="text-xs text-gray-200">
@@ -255,7 +292,7 @@ export default function TaskDetailSidebar({
                         {!isEditing && (
                             <CommentBox
                                 onSubmit={handleAddComment}
-                                currentUserName={currentUser?.displayName || undefined} // เปลี่ยน null เป็น undefined
+                                currentUserName={currentUser?.displayName || undefined}
                                 members={project.members?.map((member: Member) => member.name) || []}
                             />
                         )}
@@ -292,10 +329,8 @@ export default function TaskDetailSidebar({
     );
 }
 
-
 // ฟังก์ชั่นช่วยสำหรับแสดงวันที่ในรูปแบบที่อ่านง่าย
 function formatDate(dateInput?: any) {
-    // ฟังก์ชันเดิมไม่เปลี่ยนแปลง
     if (!dateInput) return "Not specified";
 
     let date;

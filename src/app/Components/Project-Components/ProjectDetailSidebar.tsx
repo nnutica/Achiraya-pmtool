@@ -1,16 +1,18 @@
-import { fetchProjectById } from "@/libs/projectService";
-import { Project, Member } from "@/types/project";
+import { Project, Member, ProjectStatus } from "@/types/project";
 import React, { useEffect, useState } from "react";
 import MemberSidebar from "@/app/Components/Project-Components/MemberSidebar";
+import { deleteProject } from "@/libs/projectService";
+import DeleteProjectModal from "@/app/Components/Project-Components/DeleteProjectModal";
 
 interface ProjectDetailSidebarProps {
     isOpen: boolean;
     onClose: () => void;
     project: Project;
     onEdit: (updatedProject: Project) => void;
+    onDeleteSuccess: () => void;
 }
 
-export default function ProjectDetailSidebar({ isOpen, onClose, project, onEdit }: ProjectDetailSidebarProps) {
+export default function ProjectDetailSidebar({ isOpen, onClose, project, onEdit, onDeleteSuccess }: ProjectDetailSidebarProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [editedName, setEditedName] = useState(project?.name || "");
     const [editedDescription, setEditedDescription] = useState(project?.description || "");
@@ -24,6 +26,8 @@ export default function ProjectDetailSidebar({ isOpen, onClose, project, onEdit 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
     const [editedDueDate, setEditedDueDate] = useState<string | "LTS">(project?.projectDueDate || "LTS");
+    const [editedProjectStatus, setEditedProjectStatus] = useState<ProjectStatus>(project?.projectStatus || "New");
+    const [showDeleteProjectModal, setShowDeleteProjectModal] = useState(false);
 
     // ใช้ useEffect เพื่ออัปเดตค่าเมื่อ project เปลี่ยนแปลง
     useEffect(() => {
@@ -32,6 +36,7 @@ export default function ProjectDetailSidebar({ isOpen, onClose, project, onEdit 
             setEditedDescription(project.description || "");
             setEditedMembers(project.members || []);
             setEditedDueDate(project.projectDueDate || "LTS");
+            setEditedProjectStatus(project.projectStatus || "New");
         }
     }, [project]);
 
@@ -66,25 +71,6 @@ export default function ProjectDetailSidebar({ isOpen, onClose, project, onEdit 
         }
     };
 
-    const handleSaveChanges = async () => {
-        const updatedProject: Project = {
-            ...project,
-            name: editedName,
-            description: editedDescription,
-            members: editedMembers,
-            projectDueDate: editedDueDate,
-        };
-        try {
-            await onEdit(updatedProject); // อัปเดตข้อมูลในฐานข้อมูล
-            setShowSuccessModal(true); // แสดง modal แจ้งเตือนความสำเร็จ
-        } catch (error) {
-            console.error("Error saving changes:", error);
-            alert("Failed to save changes. Please try again.");
-        }
-
-        setIsEditing(false); // ปิดโหมดแก้ไข
-    };
-
     const handleEditMemberSidebar = (member: Member) => {
         setSelectedMember(member);
         setShowMemberSidebar(true);
@@ -98,7 +84,35 @@ export default function ProjectDetailSidebar({ isOpen, onClose, project, onEdit 
         );
     };
 
+    const handleSaveChanges = async () => {
+        const updatedProject: Project = {
+            ...project,
+            name: editedName,
+            description: editedDescription,
+            members: editedMembers,
+            projectDueDate: editedDueDate,
+            projectStatus: editedProjectStatus,
+        };
+        try {
+            await onEdit(updatedProject); // อัปเดตข้อมูลในฐานข้อมูล
+            setShowSuccessModal(true); // แสดง modal แจ้งเตือนความสำเร็จ
+        } catch (error) {
+            console.error("Error saving changes:", error);
+            alert("Failed to save changes. Please try again.");
+        }
+
+        setIsEditing(false); // ปิดโหมดแก้ไข
+    };
+
+    const handleDeleteProject = () => {
+        setShowDeleteProjectModal(true); // เปิด Modal
+    };
+
+
+
     if (!isOpen) return null;
+
+
 
     return (
         <div className="fixed inset-0 z-40 flex justify-end">
@@ -131,6 +145,21 @@ export default function ProjectDetailSidebar({ isOpen, onClose, project, onEdit 
                             onChange={(e) => setEditedDueDate(e.target.value || "LTS")}
                             className="w-full border rounded-lg px-3 py-2 mb-4"
                         />
+                        <label htmlFor="project-status" className="block text-sm font-medium text-gray-700 mb-2">
+                            Project Status
+                        </label>
+                        <select
+                            id="project-status"
+                            value={editedProjectStatus}
+                            onChange={(e) => setEditedProjectStatus(e.target.value as ProjectStatus)}
+                            className="w-full border rounded-lg px-3 py-2 mb-4"
+                        >
+                            {(["New", "In-progress", "Success", "cancelled"] as ProjectStatus[]).map((status) => (
+                                <option key={status} value={status}>
+                                    {status}
+                                </option>
+                            ))}
+                        </select>
                         <h3 className="text-lg font-semibold mb-2">Members</h3>
                         <ul className="mb-4">
                             {editedMembers.map((member) => (
@@ -185,6 +214,12 @@ export default function ProjectDetailSidebar({ isOpen, onClose, project, onEdit 
                                 {isLoading ? "Saving..." : "Save Changes"}
                             </button>
                             <button
+                                onClick={handleDeleteProject}
+                                className="bg-red-600 hover:bg-red-400 text-white px-4 py-2 rounded-lg p-10"
+                            >
+                                {isLoading ? "deleting" : "Delete Project"}
+                            </button>
+                            <button
                                 onClick={() => setIsEditing(false)}
                                 className="ml-4 bg-red-400 hover:bg-red-300 text-gray-800 px-4 py-2 rounded-lg"
                             >
@@ -237,6 +272,12 @@ export default function ProjectDetailSidebar({ isOpen, onClose, project, onEdit 
                                     {project.projectDueDate === "LTS"
                                         ? "Long Term Support"
                                         : project.projectDueDate}
+                                </span>
+                            </p>
+                            <p className="text-gray-700 mb-6 font-medium">
+                                Status:{" "}
+                                <span className="text-blue-600">
+                                    {project.projectStatus || "No status"}
                                 </span>
                             </p>
 
@@ -312,6 +353,23 @@ export default function ProjectDetailSidebar({ isOpen, onClose, project, onEdit 
                     </div>
                 </div>
             )}
+
+            <DeleteProjectModal
+                isOpen={showDeleteProjectModal}
+                onClose={() => setShowDeleteProjectModal(false)}
+                onDelete={async () => {
+                    try {
+                        await deleteProject(project.id); // ลบโปรเจกต์
+                        alert("Project deleted successfully.");
+                        setShowDeleteProjectModal(false); // ปิด Modal
+                        onClose(); // ปิด Sidebar
+                        onDeleteSuccess(); // เรียกฟังก์ชันเพื่อ Fetch ข้อมูลใหม่
+                    } catch (error) {
+                        console.error("Error deleting project:", error);
+                        alert("Failed to delete project. Please try again.");
+                    }
+                }}
+            />
         </div>
     );
 }

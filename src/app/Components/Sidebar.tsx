@@ -26,13 +26,15 @@ export default function Sidebar() {
             >
                 {/* ส่วนบน: โลโก้ + ปุ่มปิด (เอาออก) + เมนู */}
                 <div className="flex flex-col h-full">
-                    <div className="p-6 flex items-center justify-start min-h-[88px]">
+                    <div className="p-6 flex items-center justify-start h-fit mt-4">
                         <div className={`transition-all duration-500 ease-in-out ${sidebarIsVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
                             {sidebarIsVisible ? (
                                 <Link href="/" className="text-2xl font-bold text-gray-800 whitespace-nowrap">
                                     Achiraya Tool
                                 </Link>
+
                             ) : null}
+                            <hr className="my-6 border-black" />
                         </div>
 
                         <div className={`transition-all duration-500 ease-in-out ${!sidebarIsVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95 absolute'}`}>
@@ -48,7 +50,7 @@ export default function Sidebar() {
                     <nav className="flex flex-col px-2 space-y-2 flex-1">
                         <div className={`transition-all duration-500 ease-in-out ${sidebarIsVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}>
                             {sidebarIsVisible && (
-                                <p className="mt-6 px-3 text-gray-700 font-semibold whitespace-nowrap">
+                                <p className="mt-6 px-3 text-gray-700 font-semibold whitespace-nowra text-xl">
                                     Welcome, {currentUser.displayName || "User"}
                                 </p>
                             )}
@@ -91,7 +93,7 @@ export default function Sidebar() {
         `}
                         aria-label="Sign Out"
                     >
-                        <FiLogOut className={`flex-shrink-0 transition-all duration-500 ease-in-out ${sidebarIsVisible ? "w-6 h-6 text-white" : "w-10 h-10 text-red-600"}`} />
+                        <FiLogOut className={`flex-shrink-0 transition-all duration-500 ease-in-out ${sidebarIsVisible ? "w-6 h-6 text-white" : "w-6 h-6 text-red-600"}`} />
                         <span className={`transition-all duration-500 ease-in-out ${sidebarIsVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'} whitespace-nowrap`}>
                             {sidebarIsVisible && "Sign Out"}
                         </span>

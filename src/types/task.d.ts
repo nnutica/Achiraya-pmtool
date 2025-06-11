@@ -1,3 +1,5 @@
+import { Member } from "./project";
+
 export type Taskstatus = "Unread" | "In-progress" | "Wait Approve" | "done" | "rejected";
 export type TaskPriority = "Low" | "Medium" | "High" | "Urgent";
 
@@ -11,6 +13,7 @@ export interface Task {
     createdAt: string; // เปลี่ยนจาก Date เป็น string
     updatedAt: string; // เปลี่ยนจาก Date เป็น string
     dueDate?: string | null; // เปลี่ยนจาก Date เป็น string
+    AssignedTo?: Member | "All"; // ID ของผู้ที่ได้รับมอบหมาย
     comments?: Comment[];
     projectId: string;
     projectName: string // ID ของ Project ที่ Task นี้อยู่

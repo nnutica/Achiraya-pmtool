@@ -16,6 +16,7 @@ interface ProjectCardProps {
         updatedAt?: string;
         userId?: string;
         projectDueDate?: string | "LTS"; // วันที่กำหนดเส้นตายของ Project
+        projectStatus?: "New" | "In-progress" | "Success" | "cancelled"; // สถานะของ Project
     }[];
     onProjectClick: (projectId: string) => void;
     onProjectDetail: (project: {
@@ -26,7 +27,8 @@ interface ProjectCardProps {
         createdAt?: string;
         updatedAt?: string;
         userId?: string;
-        projectDueDate?: string | "LTS"; // วันที่กำหนดเส้นตายของ Project
+        projectDueDate?: string | "LTS";
+        projectStatus?: string
     }) => void;
 }
 
@@ -37,11 +39,12 @@ export default function ProjectTable({ projects, onProjectClick, onProjectDetail
                 <table className="table-auto w-full border-collapse border border-gray-400 rounded-b-2xl">
                     <thead>
                         <tr className="bg-gray-50 dark:bg-gray-700 rounded-2xl">
-                            <th className="w-1/6 border border-gray-300 p-4 text-left font-semibold text-gray-900 dark:border-gray-600 dark:text-gray-200 ">Project Name</th>
-                            <th className="w-2/6 border border-gray-300 p-4 text-left font-semibold text-gray-900 dark:border-gray-600 dark:text-gray-200">Description</th>
-                            <th className="w-2/6 border border-gray-300 p-4 text-left font-semibold text-gray-900 dark:border-gray-600 dark:text-gray-200">Members</th>
-                            <th className="w-1/6 border border-gray-300 p-4 text-left font-semibold text-gray-900 dark:border-gray-600 dark:text-gray-200">Due Date</th>
-                            <th className="w-1/6 border border-gray-300 p-4 text-left font-semibold text-gray-900 dark:border-gray-600 dark:text-gray-200">Actions</th>
+                            <th className="w-2/12 border border-gray-300 p-4 text-left font-semibold text-gray-900 dark:border-gray-600 dark:text-gray-200 ">Project Name</th>
+                            <th className="w-2/12 border border-gray-300 p-4 text-left font-semibold text-gray-900 dark:border-gray-600 dark:text-gray-200">Description</th>
+                            <th className="w-3/12 border border-gray-300 p-4 text-left font-semibold text-gray-900 dark:border-gray-600 dark:text-gray-200">Members</th>
+                            <th className="w-2/12 border border-gray-300 p-4 text-left font-semibold text-gray-900 dark:border-gray-600 dark:text-gray-200">Due Date</th>
+                            <th className="w-2/12 border border-gray-300 p-4 text-left font-semibold text-gray-900 dark:border-gray-600 dark:text-gray-200">Status</th>
+                            <th className="w-1/12 border border-gray-300 p-4 text-left font-semibold text-gray-900 dark:border-gray-600 dark:text-gray-200">Actions</th>
 
                         </tr>
                     </thead>
@@ -79,6 +82,28 @@ export default function ProjectTable({ projects, onProjectClick, onProjectDetail
                                             : project.projectDueDate
                                         : "LTS"}
                                 </td>
+
+                                <td className="border border-gray-300 p-4 text-cyan-100 ">
+                                    {project.projectStatus ? (
+                                        <span
+                                            className={`px-2 py-1 rounded-full text-xs font-semibold items-center ${project.projectStatus === "New"
+                                                ? "bg-blue-500 text-white"
+                                                : project.projectStatus === "In-progress"
+                                                    ? "bg-yellow-500 text-white"
+                                                    : project.projectStatus === "Success"
+                                                        ? "bg-green-500 text-white"
+                                                        : "bg-red-500 text-white"
+                                                }`}
+                                        >
+                                            {project.projectStatus}
+                                        </span>
+                                    ) : (
+                                        <span className="text-gray-500">No status</span>
+                                    )}
+
+
+                                </td>
+
                                 <td className="border  border-gray-300 px-6 py-3 text-center">
                                     <button
                                         onClick={(e) => {

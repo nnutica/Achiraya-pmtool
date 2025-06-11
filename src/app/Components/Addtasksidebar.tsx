@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { addTask } from "@/libs/taskservice";
 import { TaskPriority, Taskstatus } from "@/types/task";
+import { Member } from "@/types/project";
 
 interface Props {
     isOpen: boolean;
@@ -10,14 +11,16 @@ interface Props {
     projectId: string;
     projectName: string; // เชื่อม Task กับ Project
     onTaskAdded: () => Promise<void>; // เพิ่ม Props สำหรับอัปเดต Task
+    members?: Member[]; // เพิ่ม props สำหรับสมาชิก
 }
 
-export default function AddTaskSidebar({ isOpen, onClose, projectId, projectName, onTaskAdded }: Props) {
+export default function AddTaskSidebar({ isOpen, onClose, projectId, projectName, onTaskAdded, members = [] }: Props) {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [priority, setPriority] = useState<TaskPriority>("Medium");
     const [status, setStatus] = useState<Taskstatus>("Unread");
     const [dueDate, setDueDate] = useState<string>("");
+    const [AssignedTo, setAssignedTo] = useState<Member | "All">("All"); // เพิ่ม State สำหรับ AssignedTo
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -31,7 +34,8 @@ export default function AddTaskSidebar({ isOpen, onClose, projectId, projectName
             dueDate: dueDate || null,
             comments: [],
             projectId,
-            projectName // เชื่อม Task กับ Project
+            projectName,
+            AssignedTo
         });
 
         await onTaskAdded(); // เรียกฟังก์ชันเพื่อ Fetch Task ใหม่
@@ -39,6 +43,7 @@ export default function AddTaskSidebar({ isOpen, onClose, projectId, projectName
         setTitle("");
         setDescription("");
         setDueDate("");
+        setAssignedTo("All"); // รีเซ็ต AssignedTo
     };
 
     if (!isOpen) return null;
@@ -136,6 +141,34 @@ export default function AddTaskSidebar({ isOpen, onClose, projectId, projectName
                                 value={dueDate}
                                 onChange={(e) => setDueDate(e.target.value)}
                             />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label htmlFor="assignedTo" className="text-sm font-medium text-white">Assign to</label>
+                            <select
+                                id="assignedTo"
+                                className="w-full border rounded-lg px-3 py-2 text-white"
+                                value={AssignedTo === "All" ? "All" : (typeof AssignedTo === 'object' ? AssignedTo.id : "")}
+                                onChange={(e) => {
+                                    const selectedId = e.target.value;
+                                    if (selectedId === "") {
+                                        setAssignedTo("All"); // ไม่ได้ Assign ให้ใคร
+                                    } else {
+                                        // ในที่นี้คุณต้องมี array ของ members เพื่อหา member ที่ถูกเลือก
+                                        // สมมติว่าคุณมี members array
+                                        const selectedMember = members?.find(member => member.id === selectedId) || "All";
+                                        setAssignedTo(selectedMember);
+                                    }
+                                }}
+                            >
+                                <option value="" className="text-gray-700">- (No assignment)</option>
+                                {/* คุณต้องเพิ่ม members array เป็น prop หรือ fetch มาจาก project */}
+                                {members?.map((member) => (
+                                    <option key={member.id} value={member.id} className="text-gray-700">
+                                        {member.name}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         <button

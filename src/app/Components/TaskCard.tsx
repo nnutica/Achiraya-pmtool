@@ -40,6 +40,17 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
                     <p key={index}>{line}</p>
                 ))}
             </div>
+            <div className="mb-2">
+                <p className="text-xs text-gray-600">
+                    Assigned to:{" "}
+                    <span className="font-medium text-blue-600">
+                        {task.AssignedTo === "All"
+                            ? "Everyone"
+                            : (typeof task.AssignedTo === 'object' ? task.AssignedTo.name : "Everyone")
+                        }
+                    </span>
+                </p>
+            </div>
 
             {/* Footer */}
             <div className="mt-auto flex items-center gap-2 text-sm text-gray-500">

@@ -8,6 +8,7 @@ import AddProjectModal from "@/app/Components/Project-Components/AddProjectModal
 import ProjectDetailSidebar from "@/app/Components/Project-Components/ProjectDetailSidebar";
 import { MdSpaceDashboard } from "react-icons/md";
 import { useAuth } from "../Components/AuthProvider";
+import { ProjectStatus } from "@/types/project";
 
 export default function Dashboard() {
     const [projects, setProjects] = useState<Project[]>([]);
@@ -20,14 +21,21 @@ export default function Dashboard() {
     useEffect(() => {
         if (!currentUser) return; // หากไม่มี currentUser ให้หยุดการทำงาน
 
-        const loadProjects = async () => {
-            const data = await fetchProjects(currentUser.uid); // ดึง Project เฉพาะของ User
-            setProjects(data); // ตรวจสอบว่า data มี members และ tasks
-        };
+
         loadProjects();
     }, [currentUser]);
 
-    const handleCreateProject = async (name: string, description: string, members: Member[], projectDueDate: string) => {
+    const loadProjects = async () => {
+        if (!currentUser) return; // ตรวจสอบว่ามี currentUser
+        try {
+            const data = await fetchProjects(currentUser.uid); // ดึงข้อมูลโปรเจกต์
+            setProjects(data); // อัปเดต State projects
+        } catch (error) {
+            console.error("Error fetching projects:", error);
+        }
+    };
+
+    const handleCreateProject = async (name: string, description: string, members: Member[], projectDueDate: string, projectStatus: ProjectStatus) => {
         if (!currentUser) {
             alert("User not logged in.");
             return;
@@ -41,7 +49,8 @@ export default function Dashboard() {
             userId: currentUser.uid,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            projectDueDate, // กำหนดค่าเริ่มต้นให้ projectDueDate เป็น "LTS"
+            projectDueDate,
+            projectStatus
         };
 
         try {
@@ -102,7 +111,8 @@ export default function Dashboard() {
                             createdAt: project.createdAt,  // ส่ง createdAt
                             updatedAt: project.updatedAt,  // ส่ง updatedAt
                             userId: project.userId,
-                            projectDueDate: project.projectDueDate       // ส่ง DueDate มาด้วย
+                            projectDueDate: project.projectDueDate,
+                            projectStatus: project.projectStatus
                         }))}
                         onProjectClick={handleProjectClick}
                         onProjectDetail={(project) => handleDetail(project as Project)}
@@ -118,7 +128,8 @@ export default function Dashboard() {
                 isOpen={showSidebar}
                 onClose={() => setShowSidebar(false)}
                 project={selectedProject!}
-                onEdit={handleEditProject} // ส่งฟังก์ชันแก้ไข
+                onEdit={handleEditProject}
+                onDeleteSuccess={loadProjects} // ส่งฟังก์ชัน Fetch ข้อมูลใหม่
             />
         </div>
     );

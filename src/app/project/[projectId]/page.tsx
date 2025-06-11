@@ -148,6 +148,7 @@ export default function ProjectDetail({ params }: { params: Promise<{ projectId:
                 projectId={project?.id || ""}
                 projectName={project?.name || "Project Name"}
                 onTaskAdded={handleTaskUpdate}
+                members={project?.members || []} // ส่ง members เข้ามา
             />
 
             {selectedTask && project && (
