@@ -89,6 +89,15 @@ export default function Dashboard() {
         console.log(projects); // ตรวจสอบว่า State projects ถูกอัปเดต
     }, [projects]);
 
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('openModal') === 'true') {
+            setShowModal(true);
+            // ลบ query parameter หลังจากเปิด modal
+            window.history.replaceState({}, '', '/Dashboard');
+        }
+    }, []);
+
     return (
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-3xl font-bold mb-6 text-white flex items-center gap-2">

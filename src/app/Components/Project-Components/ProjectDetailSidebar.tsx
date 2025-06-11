@@ -154,7 +154,7 @@ export default function ProjectDetailSidebar({ isOpen, onClose, project, onEdit,
                             onChange={(e) => setEditedProjectStatus(e.target.value as ProjectStatus)}
                             className="w-full border rounded-lg px-3 py-2 mb-4"
                         >
-                            {(["New", "In-progress", "Success", "cancelled"] as ProjectStatus[]).map((status) => (
+                            {(["New", "In-progress", "Success", "cancelled", "LTS", "Lated", "On Hold"] as ProjectStatus[]).map((status) => (
                                 <option key={status} value={status}>
                                     {status}
                                 </option>

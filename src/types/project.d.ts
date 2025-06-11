@@ -1,4 +1,4 @@
-export type ProjectStatus = "New" | "In-progress" | "Success" | "cancelled";
+export type ProjectStatus = "New" | "In-progress" | "On Hold" | "Success" | "cancelled" | "LTS" | "Lated";
 
 
 export interface Project {

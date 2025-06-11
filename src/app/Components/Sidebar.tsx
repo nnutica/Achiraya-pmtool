@@ -1,18 +1,46 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "./AuthProvider";
-import { FiSidebar, FiLogOut, FiHome, FiGrid } from "react-icons/fi";
+import { FiSidebar, FiLogOut, FiHome, FiGrid, FiFolder } from "react-icons/fi";
+import { fetchProjects, Project } from "@/libs/projectService";
+
+
+
 
 export default function Sidebar() {
     const { currentUser, signOut } = useAuth();
-
     const [isHovering, setIsHovering] = useState(false);
-
-    if (!currentUser) return null;
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [loading, setLoading] = useState(true);
 
     const sidebarIsVisible = isHovering;
+
+    // ดึงข้อมูลโปรเจค
+    useEffect(() => {
+        if (!currentUser) {
+            setLoading(false);
+            return;
+        }
+
+        const loadProjects = async () => {
+            try {
+                setLoading(true);
+                const userProjects = await fetchProjects(currentUser.uid);
+                setProjects(userProjects);
+            } catch (error) {
+                console.error('Error fetching projects:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadProjects();
+    }, [currentUser]);
+
+    // ย้าย early return มาหลังจาก hooks
+    if (!currentUser) return null;
 
     return (
         <>
@@ -32,9 +60,8 @@ export default function Sidebar() {
                                 <Link href="/" className="text-2xl font-bold text-gray-800 whitespace-nowrap">
                                     Achiraya Tool
                                 </Link>
-
                             ) : null}
-                            <hr className="my-6 border-black" />
+                            <hr className="my-4 border-black" />
                         </div>
 
                         <div className={`transition-all duration-500 ease-in-out ${!sidebarIsVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95 absolute'}`}>
@@ -47,10 +74,10 @@ export default function Sidebar() {
                     </div>
 
                     {/* เมนูลิงก์ */}
-                    <nav className="flex flex-col px-2 space-y-2 flex-1">
+                    <nav className="flex flex-col px-2 space-y-2 flex-1 overflow-y-auto">
                         <div className={`transition-all duration-500 ease-in-out ${sidebarIsVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}>
                             {sidebarIsVisible && (
-                                <p className="mt-6 px-3 text-gray-700 font-semibold whitespace-nowra text-xl">
+                                <p className="mt-2 px-3 text-gray-700 font-semibold whitespace-nowrap text-xl">
                                     Welcome, {currentUser.displayName || "User"}
                                 </p>
                             )}
@@ -79,6 +106,59 @@ export default function Sidebar() {
                                 {sidebarIsVisible && "Dashboard"}
                             </span>
                         </Link>
+
+                        {/* Quick Access Projects Section */}
+                        <div className="mt-4">
+                            <div className={`transition-all duration-500 ease-in-out ${sidebarIsVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}>
+                                {sidebarIsVisible && (
+                                    <p className="px-3 text-gray-600 font-medium text-sm uppercase tracking-wide">
+                                        Quick Access
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="mt-2 space-y-1">
+                                {loading ? (
+                                    <div className={`transition-all duration-500 ease-in-out ${sidebarIsVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}>
+                                        {sidebarIsVisible && (
+                                            <div className="px-3 py-2 text-gray-500 text-sm">
+                                                Loading projects...
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    projects.slice(0, 5).map((project) => (
+                                        <Link
+                                            key={project.id}
+                                            href={`/project/${project.id}`}
+                                            className={`flex items-center gap-3 px-3 py-2 rounded-md hover:bg-blue-400 transition-all duration-300
+                                                ${!sidebarIsVisible ? "justify-center" : ""}
+                                            `}
+                                        >
+                                            <FiFolder className="w-5 h-5 text-gray-700 flex-shrink-0" />
+                                            <span className={`transition-all duration-500 ease-in-out ${sidebarIsVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'} whitespace-nowrap text-sm truncate`}>
+                                                {sidebarIsVisible && project.name}
+                                            </span>
+                                        </Link>
+                                    ))
+                                )}
+
+                                {/* Show more projects link */}
+                                {projects.length > 5 && (
+                                    <Link
+                                        href="/Dashboard"
+                                        className={`flex items-center gap-3 px-3 py-2 rounded-md hover:bg-blue-400 transition-all duration-300 text-gray-600
+                                            ${!sidebarIsVisible ? "justify-center" : ""}
+                                        `}
+                                    >
+                                        <FiGrid className="w-5 h-5 flex-shrink-0" />
+                                        <span className={`transition-all duration-500 ease-in-out ${sidebarIsVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'} whitespace-nowrap text-sm`}>
+                                            {sidebarIsVisible && `View all (${projects.length})`}
+                                        </span>
+                                    </Link>
+                                )}
+                            </div>
+                        </div>
                     </nav>
                 </div>
 

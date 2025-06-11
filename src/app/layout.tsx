@@ -2,7 +2,7 @@
 import "./globals.css";
 import { ReactNode } from "react";
 import { AuthProvider } from "./Components/AuthProvider";
-import Navbar from "./Components/Sidebar";
+
 import { Metadata } from "next";
 import Sidebar from "./Components/Sidebar";
 export const metadata: Metadata = {

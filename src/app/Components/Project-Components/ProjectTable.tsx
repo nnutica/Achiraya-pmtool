@@ -16,7 +16,7 @@ interface ProjectCardProps {
         updatedAt?: string;
         userId?: string;
         projectDueDate?: string | "LTS"; // วันที่กำหนดเส้นตายของ Project
-        projectStatus?: "New" | "In-progress" | "Success" | "cancelled"; // สถานะของ Project
+        projectStatus?: "New" | "In-progress" | "Success" | "cancelled" | "LTS" | "Lated" | "On Hold"; // สถานะของ Project
     }[];
     onProjectClick: (projectId: string) => void;
     onProjectDetail: (project: {
@@ -92,7 +92,11 @@ export default function ProjectTable({ projects, onProjectClick, onProjectDetail
                                                     ? "bg-yellow-500 text-white"
                                                     : project.projectStatus === "Success"
                                                         ? "bg-green-500 text-white"
-                                                        : "bg-red-500 text-white"
+                                                        : project.projectStatus === "LTS"
+                                                            ? "bg-lime-400 text-white"
+                                                            : project.projectStatus === "On Hold"
+                                                                ? "bg-orange-400 text-white"
+                                                                : "bg-red-500 text-white"
                                                 }`}
                                         >
                                             {project.projectStatus}
