@@ -1,6 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+
+
+
+# 🛠 Achiraya Project Management Tool
+
+A lightweight and customizable project management application inspired by **JIRA** and **Trello** — built with modern technologies for speed, flexibility, and cost-efficiency.
+
+เครื่องมือจัดการโปรเจคที่พัฒนาขึ้นโดยมีแนวคิดจาก **JIRA** และ **Trello** — เน้นความเร็ว ความยืดหยุ่น และไม่ต้องเสียค่าใช้จ่ายเพิ่มเติม
+
+---
+
+## 📦 Tech Stack / เทคโนโลยีที่ใช้
+
+- **Frontend**: Next.js + Tailwind CSS  
+- **Backend**: Next.js API Routes + Firebase  
+- **Database**: Firebase Firestore  
+
+---
+
+## 🎯 Purpose / จุดประสงค์
+
+เนื่องจาก JIRA มีค่าใช้จ่ายสูงและมีความช้าบางครั้ง โปรเจกต์นี้จึงเกิดขึ้นเพื่อพัฒนาเครื่องมือที่มีความสามารถคล้ายกัน แต่ปรับแต่งได้และทำงานรวดเร็ว เหมาะสำหรับทีมขนาดเล็กถึงกลาง
+
+This project was created as a fast and affordable alternative to JIRA, focusing on essential project management features with full customization for small to mid-sized teams.
+
+---
+
+## 🧭 Project Boundary / ขอบเขตของโปรเจค
+
+### 🇹🇭 ภาษาไทย
+
+- ผู้ใช้สามารถ:
+  - เพิ่ม ดู แก้ไข และลบโปรเจคของตนเอง
+  - เพิ่มสมาชิกในโปรเจคได้แบบ Manual
+  - ตั้ง Due Date สำหรับแต่ละโปรเจค
+
+### 🇺🇸 English
+
+- Users can:
+  - Create, read, update, and delete their own projects
+  - Manually invite members to a project
+  - Set due dates for each project
+
+---
+
+## ✅ Task Boundary / ขอบเขตของงาน (Task)
+
+### 🇹🇭 ภาษาไทย
+
+- งาน (Task) จะถูกผูกกับโปรเจคเสมอ
+- ผู้ใช้สามารถ:
+  - เพิ่ม ดู แก้ไข ลบ Task ภายในโปรเจคของตน
+  - มอบหมายงานให้สมาชิกภายในโปรเจคนั้นได้
+
+### 🇺🇸 English
+
+- Tasks are always associated with a project
+- Users can:
+  - Create, view, update, and delete tasks within their projects
+  - Assign tasks to members within the same project
+
+---
+
+## 📊 Dashboard Boundary / ขอบเขตของแดชบอร์ด
+
+### 🇹🇭 ภาษาไทย
+
+- แดชบอร์ดสามารถ:
+  - แสดงสรุปของโปรเจคตามสถานะ
+  - เข้าถึงโปรเจคได้อย่างรวดเร็ว (Quick Access)
+  - สร้างโปรเจคใหม่แบบทางลัด
+
+### 🇺🇸 English
+
+- The dashboard provides:
+  - Summary of projects categorized by status
+  - Quick access to project pages
+  - Fast project creation via shortcut
+
+---
+
+## 🚀 Getting Started / เริ่มต้นใช้งาน
 
 First, run the development server:
 
@@ -16,9 +96,13 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+
+## 📄 License
+
+This project is licensed under the NUT License.
 
 ## Learn More
 
