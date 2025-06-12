@@ -13,6 +13,8 @@ export default function SummaryCard({ title, value, color = "blue" }: SummaryCar
                 return { bg: "bg-green-100", text: "text-green-800" };
             case "darkred":
                 return { bg: "bg-red-300", text: "text-red-900" };
+            case "yellow":
+                return { bg: "bg-yellow-100", text: "text-yellow-800" };
             default:
                 return { bg: "bg-blue-100", text: "text-gray-800" };
         }

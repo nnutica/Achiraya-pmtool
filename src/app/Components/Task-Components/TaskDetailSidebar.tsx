@@ -2,8 +2,8 @@ import { Task, TaskPriority, Taskstatus } from "@/types/task";
 import { useEffect, useRef, useState } from "react";
 import Badge from "./Badge";
 import { updateTask, addComment, fetchTaskById, updateTaskStatus } from "@/libs/taskservice";
-import { useAuth } from "./AuthProvider";
-import CommentBox from "@/app/Components/CommentBox";
+import { useAuth } from "../AuthProvider";
+import CommentBox from "@/app/Components/Task-Components/CommentBox";
 import { Member, Project } from "@/types/project";
 
 interface TaskDetailSidebarProps {

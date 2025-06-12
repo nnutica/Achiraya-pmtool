@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { fetchProjectById } from "@/libs/projectService";
 import { Project } from "@/types/project";
 import { Task } from "@/types/task";
-import TaskCard from "@/app/Components/TaskCard";
-import AddTaskSidebar from "@/app/Components/Addtasksidebar";
-import TaskDetailSidebar from "@/app/Components/TaskDetailSidebar";
-import DeleteModal from "@/app/Components/DeleteModal";
+import TaskCard from "@/app/Components/Task-Components/TaskCard";
+import AddTaskSidebar from "@/app/Components/Task-Components/Addtasksidebar";
+import TaskDetailSidebar from "@/app/Components/Task-Components/TaskDetailSidebar";
+import DeleteModal from "@/app/Components/Task-Components/DeleteModal";
 
 import { fetchTasksByProjectId, updateTaskStatus, deleteTask } from "@/libs/taskservice";
 import { Button } from "@headlessui/react";

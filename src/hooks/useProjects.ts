@@ -8,6 +8,7 @@ interface ProjectStats {
     overdue: number;
     lts: number;
     cancelled: number;
+    onHold: number;
 }
 
 export function useProjects(userId: string | null) {
@@ -19,7 +20,8 @@ export function useProjects(userId: string | null) {
         completed: 0,
         overdue: 0,
         lts: 0,
-        cancelled: 0
+        cancelled: 0,
+        onHold: 0
     });
 
     const calculateProjectStats = (projects: Project[]): ProjectStats => {
@@ -28,6 +30,7 @@ export function useProjects(userId: string | null) {
         const completed = projects.filter(p => p.projectStatus === 'Success').length;
         const lts = projects.filter(p => p.projectStatus === 'LTS').length;
         const cancelled = projects.filter(p => p.projectStatus === 'cancelled').length;
+        const onHold = projects.filter(p => p.projectStatus === 'On Hold').length;
 
         const now = new Date();
         const overdue = projects.filter(p => {
@@ -39,7 +42,7 @@ export function useProjects(userId: string | null) {
             return false;
         }).length;
 
-        return { total, ongoing, completed, overdue, lts, cancelled };
+        return { total, ongoing, completed, overdue, lts, cancelled, onHold };
     };
 
     const getRecentProjects = () => {
