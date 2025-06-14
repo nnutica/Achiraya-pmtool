@@ -106,7 +106,7 @@ export default function ProjectDetail({ params }: { params: Promise<{ projectId:
     };
 
     return (
-        <div className="min-h-screen bg-sky-950 text-white px-2 sm:px-4 lg:px-6 py-3 sm:py-4 lg:py-6">
+        <div className="min-h-screen bg-sky-900 text-white px-2 sm:px-4 lg:px-6 py-3 sm:py-4 lg:py-6">
             {/* Header - Responsive */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-6 border-b border-gray-700 pb-3 sm:pb-4">
                 <Link href="/Dashboard">
@@ -125,7 +125,7 @@ export default function ProjectDetail({ params }: { params: Promise<{ projectId:
                         <button
                             onClick={() => setViewMode('column')}
                             className={`p-1.5 rounded text-xs transition-colors ${viewMode === 'column'
-                                ? 'bg-blue-600 text-white'
+                                ? 'bg-sky-900 text-white'
                                 : 'text-gray-400 hover:text-white'
                                 }`}
                             title="Column View"
@@ -135,7 +135,7 @@ export default function ProjectDetail({ params }: { params: Promise<{ projectId:
                         <button
                             onClick={() => setViewMode('grid')}
                             className={`p-1.5 rounded text-xs transition-colors ${viewMode === 'grid'
-                                ? 'bg-blue-600 text-white'
+                                ? 'bg-sky-900 text-white'
                                 : 'text-gray-400 hover:text-white'
                                 }`}
                             title="Grid View"
