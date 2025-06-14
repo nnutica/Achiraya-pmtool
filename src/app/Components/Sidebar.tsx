@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { useAuth } from "../AuthProvider";
+import { useAuth } from "./AuthProvider";
 import { FiSidebar, FiLogOut, FiHome, FiGrid, FiFolder } from "react-icons/fi";
 import { fetchProjects, Project } from "@/libs/projectService";
 

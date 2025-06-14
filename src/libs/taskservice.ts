@@ -120,3 +120,16 @@ export const updateTaskStatus = async (taskId: string, newStatus: string): Promi
     const taskRef = doc(db, "tasks", taskId);
     await updateDoc(taskRef, { status: newStatus }); // อัปเดตสถานะใน Firestore
 };
+
+export async function updateTaskPriority(taskId: string, newPriority: string): Promise<void> {
+    try {
+        const taskRef = doc(db, "tasks", taskId);
+        await updateDoc(taskRef, {
+            priority: newPriority,
+            updatedAt: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error("Error updating task priority:", error);
+        throw error;
+    }
+}

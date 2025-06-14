@@ -132,7 +132,7 @@ export default function TaskDetailSidebar({
             <div className="absolute inset-0 bg-black/20  transition-opacity"></div>
             <div
                 ref={sidebarRef}
-                className="bg-blue-950 w-1/2 sm:w-1/2 rounded-l-3xl h-full  overflow-y-auto p-6 shadow-lg relative"
+                className="bg-blue-950 w-1/3 sm:w-1/3 rounded-l-3xl h-full  overflow-y-auto p-6 shadow-lg relative"
             >
                 <div className="sticky top-0 bg-blue-950 pt-2 z-10 shadow ">
                     <div className="flex justify-between items-center">
