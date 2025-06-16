@@ -86,11 +86,15 @@ export default function register() {
                     </div>
                 </div>
             </div>
-            <div className="hidden lg:block relative flex-[6] rounded-4xl">
-                <img
+            <div className=" bg-sky-900 hidden lg:block relative flex-[6] rounded-4xl">
+                <Image
                     src="/achirayatn.png"
                     alt="thumbnail page"
-                    className="w-full h-full object-scale-fill rounded-4xl"
+                    fill
+                    style={{
+                        objectFit: "fill",
+                        borderRadius: "1.5rem",
+                    }}
                 />
 
             </div>

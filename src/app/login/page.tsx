@@ -21,7 +21,7 @@ export default function Login() {
     };
 
     return (
-        <div className="flex h-screen bg-indigo-600">
+        <div className="flex h-screen bg-sky-900 rounded-2xl lg:rounded-l-none lg:rounded-r-4xl">
             <div className="hidden lg:block relative flex-[6] rounded-4xl">
                 <Image
                     src="/achirayatn.png"
@@ -33,7 +33,7 @@ export default function Login() {
                     }}
                 />
             </div>
-            <div className="bg-indigo-800 flex-[6] p-8 sm:p-16 md:p-20 lg:p-24 w-full rounded-b-xl">
+            <div className="bg-sky-800 flex-[6] p-8 sm:p-16 md:p-20 lg:p-24 w-full rounded-b-xl">
                 <div className="bg-white rounded-4xl p-8 sm:p-10 md:p-12 lg:p-12 shadow-lg">
 
                     <Image
