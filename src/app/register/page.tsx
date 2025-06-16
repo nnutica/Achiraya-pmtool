@@ -24,7 +24,7 @@ export default function register() {
 
     return (
         <div className="flex h-screen ">
-            <div className="bg-sky-800 flex-[6] p-8 sm:p-16 md:p-20 lg:p-24 w-full rounded-b-xl">
+            <div className="bg-sky-900 flex-[6] p-8 sm:p-16 md:p-20 lg:p-24 w-full rounded-b-xl">
                 <div className="bg-white rounded-4xl p-8 sm:p-10 md:p-12 lg:p-12 shadow-lg">
                     <Image
                         src="/achirayalogo.png"
